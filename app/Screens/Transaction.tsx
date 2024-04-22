@@ -8,10 +8,7 @@ import Dashboard from '../Components/Dashboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { coupageGeneric } from '../Interfaces/Method';
 import NetInfo from "@react-native-community/netinfo";
-
-
 import * as Updates from 'expo-updates';
-import Toast from '../Components/Toast';
 async function onFetchUpdateAsync() {
   try {
     const update = await Updates.checkForUpdateAsync();
@@ -307,7 +304,7 @@ const History = () => {
         DebtAmount={Calculate?.Debts}
         ExpenseAmount={Calculate?.Expense}
       />
-      <Text>Totale Expend By Category For This Month: </Text>
+      <Text>Montly Expense By Grouped By Category: </Text>
       {
         expGrouped.length != 0 && (
           expGrouped.map(item => {

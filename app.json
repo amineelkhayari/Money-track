@@ -1,53 +1,53 @@
 {
-  "expo": {
-    "name": "Money Tracker",
-    "slug": "maoney-tracker",
-    "scheme": "moneytracker",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "runtimeVersion": {
-        "policy": "appVersion"
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.aminemohammed071.maoneytracker"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-router"
-    ],
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "e5a81176-d5ea-49ca-9cea-7ffc7ce97cbc"
-      }
-    },
-    "owner": "aminemohammed071",
-    "runtimeVersion": "1.0.0",
-    "updates": {
-      "url": "https://u.expo.dev/e5a81176-d5ea-49ca-9cea-7ffc7ce97cbc",
-      "requestHeaders": {
-        "expo-channel-name": "main"
-      }
+    "expo": {
+        "name": "Money Tracker",
+        "slug": "maoney-tracker",
+        "scheme": "moneytracker",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "cover",
+            "backgroundColor": "#ffffff"
+        },
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": true,
+            "runtimeVersion": {
+                "policy": "appVersion"
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "# ffffff "
+            },
+            "package": "com.aminemohammed071.maoneytracker"
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "plugins": [
+            "expo-router"
+        ],
+        "extra": {
+            "router": {
+                "origin": false
+            },
+            "eas": {
+                "projectId": "e5a81176-d5ea-49ca-9cea-7ffc7ce97cbc"
+            }
+        },
+        "owner": "aminemohammed071",
+        "runtimeVersion": "1.0.0",
+        "updates": {
+            "url": "https://u.expo.dev/e5a81176-d5ea-49ca-9cea-7ffc7ce97cbc",
+            "requestHeaders": {
+                "expo-channel-name": "main"
+            }
+        }
     }
-  }
 }
