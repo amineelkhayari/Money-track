@@ -1,94 +1,103 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, NavigationContainer, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { addDoc, collection, doc, setDoc, writeBatch } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
-import { db, IData } from '@/Interfaces/DbSet';
-
-
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
-
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
-};
+import { db } from './Interfaces/Firebase';
+import { useFonts } from 'expo-font';
+import NetInfo from '@react-native-community/netinfo';
+import { str } from './Interfaces/Storage';
+import { Alert } from 'react-native';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
 export default function RootLayout() {
+  const [isConnected, setIsConnected] = useState<boolean>(false); // Default to true to handle initial state
+  const [Rechable, setRechable] = useState<boolean>(false); // Default to true to handle initial state
 
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
+    am: require('../assets/fonts/SpaceMono-Regular.ttf')
   });
-
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setRechable(state.isInternetReachable ?? false);
+      setIsConnected(state?.isConnected ?? false); // Ensure state.isConnected is properly handled
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+  useEffect(() => {
+
+
+    const asyncData = async () => {
+      var value = await AsyncStorage.getItem('LocalExpense');
+      if (value != null) {
+        let val: Expense[] = JSON.parse(value);
+
+        if (val.length > 0) {
+          val.forEach(async (load: Expense) => {
+            load.sync = !load.sync;
+            //batch.set(doc(collection(db, "users",load.transaction)), load);
+            // addDoc(collection(db, "users"), load);
+            setDoc(doc(db, 'users', load.transaction), load);
+            //console.log("change all Value to true",load)
+          });
+          if (isConnected && Rechable ) {
+            await str.removeValue('LocalExpense')
+            Alert.alert("Data Loaded", "From Local To Online");
+          }
+
+
+        }
+      }
+
+      //
+    }
     if (loaded) {
-      db.createTableManually(`
-          CREATE TABLE if NOT EXISTS category (
-	        ID INTEGER PRIMARY KEY AUTOINCREMENT,
-	        NameCat TEXT NOT NULL UNIQUE
-          );`);
-      db.createTableManually(`
-          CREATE TABLE if NOT EXISTS subCategory (
-            ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            NameSubCat TEXT NOT NULL UNIQUE,
-            catID INTEGER,
-              FOREIGN KEY (catID) 
-                REFERENCES category (IdCat) 
-                   ON DELETE CASCADE 
-                   ON UPDATE NO ACTION
-            
-          );
-          `)
-      db.createTableManually(`CREATE TABLE if NOT EXISTS Expense (
-            ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            Title TEXT,
-            PaymentTransaction TEXT UNIQUE,
-            DateExpense DATE DEFAULT (datetime('now','localtime')),
-            PayedBy TEXT NOT NULL,
-            Amount REAL NOT NULL,
-            Structure TEXT,
-            IdSubCat INTEGER,
-             FOREIGN KEY (IdSubCat) 
-                REFERENCES subCategory (IdCat) 
-                   ON DELETE CASCADE 
-                   ON UPDATE NO ACTION   
-            
-          );`);
+      asyncData();
       SplashScreen.hideAsync();
     }
+
   }, [loaded]);
 
   if (!loaded) {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return <Layout />
+
 }
 
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+function Layout() {
+
+
+
 
   return (
-    <ThemeProvider value={DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+    <Stack
 
-      </Stack>
-      
-    </ThemeProvider>
+      screenOptions={{
+        headerShown: false,
+        headerStyle: {
+          backgroundColor: '#0101',
+        },
+        headerTintColor: '#333',
+
+
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <Stack.Screen name="Screens/Detail" options={{ headerShown: true, headerTitle: "Detail" }} />
+
+    </Stack>
   );
 }

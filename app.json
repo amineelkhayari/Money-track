@@ -1,14 +1,13 @@
 {
   "expo": {
-    "name": "ExpenseTrack",
-    "slug": "expnser",
+    "name": "Money Tracker",
+    "slug": "maoney-tracker",
+    "scheme": "moneytracker",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,33 +15,39 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.aminemohammed071.maoneytracker"
     },
     "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router"
     ],
-    "experiments": {
-      "typedRoutes": true
-    },
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "198eb2d6-0de6-4fae-899d-9c44e9cee87c"
+        "projectId": "e5a81176-d5ea-49ca-9cea-7ffc7ce97cbc"
       }
     },
-    "owner": "dresssqn12"
+    "owner": "aminemohammed071",
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/e5a81176-d5ea-49ca-9cea-7ffc7ce97cbc",
+      "requestHeaders": {
+        "expo-channel-name": "main"
+      }
+    }
   }
 }
