@@ -180,25 +180,25 @@ try {
   if (!exp.amount) {
     //await str.removeValue('LocalExpense')
 
-    Alert.alert('Error', 'Amount is required.');
+    Alert.alert('Error', 'Amount Is Required.');
     return;
   }
 
   if (!exp.dateExp) {
-    Alert.alert('Error', 'Date of Expense is required.');
+    Alert.alert('Error', 'Date Of Expense Is Required.');
     return;
   }
 
   if (!exp.paidBy) {
-    Alert.alert('Error', 'Paid By is required.');
+    Alert.alert('Error', 'Paid By Is Required.');
     return;
   }
   if (exp.participants.length === 0) {
-    Alert.alert('Error', 'Participant is required.');
+    Alert.alert('Error', 'Participant Is Required.');
     return;
   }
   if (selectedCat === "") {
-    Alert.alert('Error', 'Category is required.');
+    Alert.alert('Error', 'Category Is Required.');
     return;
   }
 
