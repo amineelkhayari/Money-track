@@ -44,14 +44,13 @@ export default function RootLayout() {
         if (val.length > 0) {
           val.forEach(async (load: Expense) => {
             load.sync = !load.sync;
-            //batch.set(doc(collection(db, "users",load.transaction)), load);
-            // addDoc(collection(db, "users"), load);
-            setDoc(doc(db, 'users', load.transaction), load);
-            //console.log("change all Value to true",load)
+            if (isConnected && Rechable) await setDoc(doc(db, 'users', load.transaction), load);
+            else setDoc(doc(db, 'users', load.transaction), load);
+
           });
-          if (isConnected && Rechable ) {
+          if (isConnected && Rechable) {
             await str.removeValue('LocalExpense')
-            Alert.alert("Data Loaded", "From Local To Online");
+            Alert.alert("Data Sync", "With Success");
           }
 
 
@@ -89,14 +88,17 @@ function Layout() {
           backgroundColor: '#0101',
         },
         headerTintColor: '#333',
-
-
         headerTitleStyle: {
           fontWeight: 'bold',
         },
       }}
     >
-      <Stack.Screen name="Screens/Detail" options={{ headerShown: true, headerTitle: "Detail" }} />
+      <Stack.Screen name="Screens/Detail" options={{
+        animation: 'fade',
+        headerShown: true,
+
+        headerTransparent: true
+      }} />
 
     </Stack>
   );

@@ -1,4 +1,4 @@
-rootProject.name = 'Money Tracker'
+rootProject.name = 'Track Money'
 
 dependencyResolutionManagement {
   versionCatalogs {

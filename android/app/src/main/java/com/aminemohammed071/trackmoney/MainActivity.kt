@@ -1,4 +1,4 @@
-package com.aminemohammed071.maoneytracker
+package com.aminemohammed071.trackmoney
 
 import android.os.Build
 import android.os.Bundle

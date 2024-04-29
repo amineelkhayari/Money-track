@@ -69,47 +69,7 @@ const Credits = () => {
 
   }, [])
 
-  async function getTotalDebtForUser(userId: any) {
-    let dataarr: any = [];
-    const currentDate = new Date();
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    // Format dates as strings
-    const startOfMonthString = startOfMonth.toISOString();
-    const endOfMonthString = endOfMonth.toISOString();
 
-    const usersCollection = collection(db, 'users');
-
-    const q = query(usersCollection,
-      where('dateExp', '>=', startOfMonthString),
-      where('dateExp', '<=', endOfMonthString),
-      orderBy('dateExp', 'desc')
-    )
-
-    // Get all users
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      const expense = doc.data();
-      const amount = expense.amount;
-      const paidBy = expense.paidBy;
-
-      // Calculate Mohammed's share in the expense
-      const participants = expense.participants;
-      if (paidBy === selectUser) {
-        participants.forEach((participant: Participants) => {
-          if (participant.Value !== selectUser && !participant.Payed) {
-            dataarr.push({ partName: participant.Value, ...expense });
-          }
-
-        });
-      }
-
-
-
-    })
-
-    return dataarr;
-  }
 
 
   if (expGrouped.length == 0) {
@@ -143,8 +103,8 @@ const Credits = () => {
 
               <View style={[styles.transaction, { backgroundColor: transaction.paidBy === selectUser ? "green" : "grey" }]}>
                 <View>
-                  <Text style={{ fontWeight: 'bold' }}>{transaction.description}</Text>
-                  <Text>Amount: {transaction.amount}</Text>
+                <Text style={{ fontWeight: 'bold' }}>{transaction.description} type : {transaction.cat}</Text>
+                  <Text>At: {transaction.timeExp}</Text>
                 </View>
                 <View>
                   <Text>Parts: {transaction.participants.length}</Text>
@@ -165,56 +125,8 @@ const Credits = () => {
     </View>
   );
   return (
-    // <View>
-    //   <Button title={"Refrech All Credit for " + selectUser} onPress={() => {
-    //     getTotalDebtForUser("test")
-    //       .then((data) => {
-    //         setExpenses(data);
-    //         console.log('Total debt for user Amine ' + data.length, data);
-    //       })
-    //       .catch((error) => {
-    //         console.error('Error:', error);
-    //       });
-    //   }} />
-    //   <View>
-    //     {
-    //       (exp?.length > 0 && (
-    //         exp.map((item: ExpenseCreadit, index: number) => {
-    //           return (
-    //             <TouchableOpacity
-    //               key={item.transaction + index}
-    //               onPress={() => {
-    //                 router.push(
-    //                   {
-    //                     pathname: '/detail/detail', params: { id: item.transaction }
-    //                   }
-    //                 )
-    //               }}>
-    //               <View key={item.transaction + index} style={styles.expenseItem}>
-    //                 <Text style={styles.description}>{item.description} Credit To {item?.partName}</Text>
-    //                 <Text style={styles.amount}>${(item.amount / item.participants.length).toFixed(2)}</Text>
-    //               </View>
-    //             </TouchableOpacity>
-    //           )
-    //         })
-    //       ))
-    //     }
-    //   </View>
 
-    // </View>
     <View style={styles.container}>
-      {/* <Button title={"Refrech All Debts for " + selectUser} onPress={() => {
-        getTotalDebtForUser("test")
-          .then((data) => {
-            setExpenses(data);
-            setGrouped(coupageGeneric(data,"paidBy"));
-
-            console.log('Total debt with grouped', expGrouped );
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-          });
-      }} /> */}
 
       <FlatList
         data={expGrouped}

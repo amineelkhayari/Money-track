@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Alert } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Alert, Modal, TouchableOpacity, TextInput, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
@@ -13,32 +13,8 @@ async function onFetchUpdateAsync() {
   try {
     const update = await Updates.checkForUpdateAsync();
     if (update.isAvailable) {
-      //await Updates.fetchUpdateAsync();
-      //await Updates.reloadAsync();
-      Alert.alert(
-        "Are your sure?",
-        "To Update Money Tracker To V:"+Updates.runtimeVersion,
-        [
-          // The "Yes" button
-          {
-            text: "Yes",
-            onPress: async () => {
-              
-              await Updates.fetchUpdateAsync();
-              await Updates.reloadAsync();
-          
-            },
-          },
-          // The "No" button
-          // Does nothing but dismiss the dialog when tapped
-          {
-            text: "No",
-            onPress: ()=>{
-              Alert.alert("Check Next time New Update");
-            }
-          },
-        ]
-      );
+      await Updates.fetchUpdateAsync();
+      await Updates.reloadAsync();
 
     }
   } catch (error) {
@@ -53,8 +29,14 @@ const History = () => {
 
   const [Calculate, setCalculate] = useState<any>();
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
-  const [stateWifi,setStateWifi]=useState<any>();
+  const [inputValue, setInputValue] = useState('');
 
+  const {
+    currentlyRunning,
+    availableUpdate,
+    isUpdateAvailable,
+    isUpdatePending
+  } = Updates.useUpdates();
 
   // Define a function to get the total debt for a specific user
   async function getTotalDebtForUser(userId: any) {
@@ -150,7 +132,7 @@ const History = () => {
     const q = query(usersCollection,
       where('dateExp', '>=', startOfMonthString),
       where('dateExp', '<=', endOfMonthString),
-      orderBy('dateExp','desc')
+      orderBy('dateExp', 'desc')
     )
 
     const subscribe = onSnapshot(q, {
@@ -245,6 +227,70 @@ const History = () => {
 
 
   }, []);
+  const [modalVisible, setModalVisible] = useState(true);
+
+
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
+  if (inputValue == '1') {
+
+
+
+    return (
+      <View >
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={handleCloseModal}
+          style={{ width: "100%" }}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>New Update {Updates.runtimeVersion}</Text>
+              <Text ></Text>
+
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: "100%" }}>
+                <TouchableOpacity
+                  style={{ flexBasis: "45%", backgroundColor: "#3133", padding: 10, borderRadius: 15 }}
+                  onPress={async () => {
+                    try {
+                      const update = await Updates.checkForUpdateAsync();
+                      if (update.isAvailable) {
+
+                        setInputValue(JSON.stringify(update));
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      // Handle errors gracefully
+                    }
+                  }}>
+                  <Text
+                    style={{ textAlign: 'center' }}
+
+                  >Update</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flexBasis: "45%", backgroundColor: "#3133", padding: 10, borderRadius: 15 }}
+
+                  onPress={handleCloseModal}>
+                  <Text
+                    style={{ textAlign: 'center' }}
+
+                  >Later</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+      </View>
+    );
+  }
 
   if (selectedUser == "") {
     return (
@@ -272,32 +318,60 @@ const History = () => {
 
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight }}>
-      <Button title='Check New Updates' onPress={() => {
-       onFetchUpdateAsync();
-      }} />
-      <Button
-        title='refrech' onPress={() => {
-          // getTotalDebtForUser(selectedUser)
-          //   .then((data) => {
-          //     //console.log(data)
-          //     setCalculate(data)
-          //   })
-          //   .catch((error) => {
-          //     //  console.error('Error:', error);
-          //   });
-          NetInfo.fetch().then(state => {
-            // console.log("Connection type", state.type);
-            // console.log("Is connected?", state.isConnected);
-            // console.log("Is internet reachable?", state.isInternetReachable);
-            // console.log("Details", state.details);
-            setStateWifi(state);
-           // console.log("State",stateWifi);
+      <ScrollView>
+      <Text>{inputValue}</Text>
+      </ScrollView>
+      {isUpdateAvailable && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={handleCloseModal}
+          style={{ width: "100%" }}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>New Update {Updates.runtimeVersion}</Text>
+              <Text ></Text>
 
-          });
-        }} />
-        
-        <Text>isConnected {stateWifi?.type}: {stateWifi?.isConnected+""} and Has Internet : {stateWifi?.isInternetReachable+""}</Text>
-      
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: "100%" }}>
+                <TouchableOpacity
+                  style={{ flexBasis: "45%", backgroundColor: "#3133", padding: 10, borderRadius: 15 }}
+                  onPress={async () => {
+                    try {
+                      const update = await Updates.checkForUpdateAsync();
+                      if (update.isAvailable) {
+                        //await Updates.fetchUpdateAsync();
+              //await Updates.reloadAsync();
+                        //setInputValue(JSON.stringify(update));
+                        onFetchUpdateAsync();
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      // Handle errors gracefully
+                    }
+                  }}>
+                  <Text
+                    style={{ textAlign: 'center' }}
+
+                  >Update</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ flexBasis: "45%", backgroundColor: "#3133", padding: 10, borderRadius: 15 }}
+
+                  onPress={handleCloseModal}>
+                  <Text
+                    style={{ textAlign: 'center' }}
+
+                  >Later</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+    
 
       <Dashboard
         CreditAmount={Calculate?.Credit}
@@ -310,8 +384,8 @@ const History = () => {
           expGrouped.map(item => {
             return (
               <View key={item.date + "" + item.exp} style={{ flexDirection: "row", justifyContent: 'space-between', padding: 5 }}>
-                <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{item.date}</Text> 
-                
+                <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{item.date}</Text>
+
                 <Text style={{ color: "red" }}>: -{item.exp} MAD</Text>
               </View>
             )
@@ -322,10 +396,48 @@ const History = () => {
     </SafeAreaView>
   )
 }
-/// eas update --branch production --message "Valid cnx"
+/// eas update --branch production --message "change same config"
 export default History
 
 const styles = StyleSheet.create({
+
+  openButton: {
+    fontSize: 16,
+    color: 'blue',
+    textDecorationLine: 'underline',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    width: '90%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
+    paddingLeft: 10,
+  },
+  closeButton: {
+    marginTop: 10,
+    color: 'blue',
+    textDecorationLine: 'underline',
+  },
   usersSelect: {
     flexDirection: "row",
     justifyContent: 'space-between',

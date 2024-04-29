@@ -172,8 +172,8 @@ const Expenses = () => {
 
               <View style={[styles.transaction, { backgroundColor: transaction.paidBy === selectUser ? "green" : "grey" }]}>
                 <View>
-                  <Text style={{ fontWeight: 'bold' }}>{transaction.description}</Text>
-                  <Text>Amount: {transaction.amount}</Text>
+                  <Text style={{ fontWeight: 'bold' }}>{transaction.description} type : {transaction.cat}</Text>
+                  <Text>At: {transaction.timeExp}</Text>
                 </View>
                 <View>
                   <Text>Parts: {transaction.participants.length}</Text>
