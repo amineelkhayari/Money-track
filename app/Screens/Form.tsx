@@ -214,8 +214,8 @@ export default function ModalScreen() {
           if (isConnected && Rechable) {
             exp.sync = !exp.sync;
             await setDoc(doc(db, 'users', exp.transaction), exp);
-            //Alert.alert('Done', 'Data Add On Server.');
-            setDone(true);
+            Alert.alert('Data Add On Server.', 'With Success');
+            //setDone(true);
 
           } else {
             // Add expense locally
@@ -225,7 +225,7 @@ export default function ModalScreen() {
             //console.log(exp)
             //console.log("Expenses ",expenses)
             await saveExpensesLocally();
-            Alert.alert('Done', 'Data Add On Local.');
+            Alert.alert('Data Add On Local.', 'With Success');
           }
 
           SetName('');

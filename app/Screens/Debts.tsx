@@ -26,7 +26,7 @@ const Debts = () => {
 
     const q = query(usersCollection,
       where('dateExp', '>=', startOfMonthString),
-      where('dateExp', '<=', endOfMonthString),
+      //where('dateExp', '<=', endOfMonthString),
       orderBy('dateExp', 'desc')
     );
     const subscribe = onSnapshot(q,{

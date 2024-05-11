@@ -3,12 +3,13 @@ import React, { useEffect, useState } from 'react'
 import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
 import { str } from '../Interfaces/Storage';
-import { users } from '../Interfaces/Users';
+import { monthNames, users } from '../Interfaces/Users';
 import Dashboard from '../Components/Dashboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { coupageGeneric } from '../Interfaces/Method';
 import NetInfo from "@react-native-community/netinfo";
 import * as Updates from 'expo-updates';
+import { DropDownList } from '../Components/Picker';
 async function onFetchUpdateAsync() {
   try {
     const update = await Updates.checkForUpdateAsync();
@@ -30,7 +31,10 @@ const History = () => {
   const [Calculate, setCalculate] = useState<any>();
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
   const [inputValue, setInputValue] = useState('');
-
+  
+  const [month, setMonth]: any = useState(new Date().toLocaleDateString('default', { month: 'numeric' }));
+  const[daySelect,SetdaySelected] = useState(new Date().getDate());
+  const [day, setDay]: any = useState(new Date(new Date().getFullYear(), month, 0).getDate())
   const {
     currentlyRunning,
     availableUpdate,
@@ -131,7 +135,7 @@ const History = () => {
 
     const q = query(usersCollection,
       where('dateExp', '>=', startOfMonthString),
-      where('dateExp', '<=', endOfMonthString),
+     // where('dateExp', '<=', endOfMonthString),
       orderBy('dateExp', 'desc')
     )
 
@@ -319,6 +323,7 @@ const History = () => {
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight }}>
       <ScrollView>
+
       <Text>{inputValue}</Text>
       </ScrollView>
       {isUpdateAvailable && (
@@ -372,7 +377,18 @@ const History = () => {
         </Modal>
       )}
     
-
+      <View>
+      <DropDownList
+          Data={monthNames}
+          label="month"
+          styleLabel={{color:"red"}}
+          styletextInput={{color:"red"}}
+          onchange={(value) => setMonth(value)
+          }
+          selectedVal={month}
+          placerholder='Select Month By'
+        />
+      </View>
       <Dashboard
         CreditAmount={Calculate?.Credit}
         DebtAmount={Calculate?.Debts}

@@ -42,9 +42,7 @@
       }
     },
     "owner": "aminemohammed071",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/91925bb3-e0b5-4116-a829-cee6f99acd78"
     }

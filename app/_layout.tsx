@@ -97,8 +97,9 @@ function Layout() {
         animation: 'fade',
         headerShown: true,
 
-        headerTransparent: true
-      }} />
+        headerTransparent: false,
+        presentation:'card' 
+             }} />
 
     </Stack>
   );

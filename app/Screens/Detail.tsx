@@ -30,54 +30,102 @@ const ExpenseDetailPage = () => {
     }, [params.id, exp]); // Add params.id to the dependency array
 
     useLayoutEffect(() => {
-
         navigation.setOptions({
-            headerTitle: "  Detail of " + exp?.description,
-            headerTransparent: false,
-            presentation: 'Modal',
-            animation: 'fade',
-            headerRight: () => (
-                <View style={styless.bar}>
-                    <TouchableOpacity style={[styless.roundButton,{backgroundColor:"red"}]} onPress={() => {
-                      if(exp.paidBy === selectUser)
-                      Alert.alert(
-                        "Are your sure?",
-                        "To Delete this Record : " + exp?.description,
-                        [
-                            // The "Yes" button
-                            {
-                                text: "Yes",
-                                onPress: async () => {
-
-                                    await deleteDoc(doc(db, "users", exp?.transaction));
-                                    router.back();
-                                    //useNavigation().goBack();
-
-                                },
-                            },
-                            // The "No" button
-                            // Does nothing but dismiss the dialog when tapped
-                            {
-                                text: "No",
-                                onPress: () => {
-                                }
-                            },
-                        ]
-                    );
-                    else 
-                    Alert.alert("You Dont have Permission")
-                    }}>
-                        <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
-                    </TouchableOpacity>
-                </View>
-            ),
+            headerTitle: "Expense Detail",
             headerLeft: () => (
                 <TouchableOpacity style={styless.roundButton} onPress={() => navigation.goBack()}>
                     <Ionicons name="chevron-back" size={24} color={'#000'} />
                 </TouchableOpacity>
             ),
+            headerRight: () => (
+                <View style={styless.bar}>
+                    <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]} onPress={() => {
+                        if (exp.paidBy === selectUser)
+                            Alert.alert(
+                                "Are your sure?",
+                                "To Delete this Record : " + exp?.description,
+                                [
+                                    // The "Yes" button
+                                    {
+                                        text: "Yes",
+                                        onPress: async () => {
+
+                                            await deleteDoc(doc(db, "users", exp?.transaction));
+                                            router.back();
+                                            //useNavigation().goBack();
+
+                                        },
+                                    },
+                                    // The "No" button
+                                    // Does nothing but dismiss the dialog when tapped
+                                    {
+                                        text: "No",
+                                        onPress: () => {
+                                        }
+                                    },
+                                ]
+                            );
+                        else
+                            Alert.alert("You Dont have Permission")
+                    }}>
+                        <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
+                    </TouchableOpacity>
+                </View>
+            )
+
+
         });
-    }, [exp]);
+    }, [exp])
+
+    // useLayoutEffect(() => {
+
+    //     navigation.setOptions({
+    //         headerTitle: "  Detail of " + exp?.description,
+    //         headerTransparent: false,
+    //         presentation: 'Modal',
+    //         animation: 'fade',
+    //         headerRight: () => (
+    //             <View style={styless.bar}>
+    //                 <TouchableOpacity style={[styless.roundButton,{backgroundColor:"red"}]} onPress={() => {
+    //                   if(exp.paidBy === selectUser)
+    //                   Alert.alert(
+    //                     "Are your sure?",
+    //                     "To Delete this Record : " + exp?.description,
+    //                     [
+    //                         // The "Yes" button
+    //                         {
+    //                             text: "Yes",
+    //                             onPress: async () => {
+
+    //                                 await deleteDoc(doc(db, "users", exp?.transaction));
+    //                                 router.back();
+    //                                 //useNavigation().goBack();
+
+    //                             },
+    //                         },
+    //                         // The "No" button
+    //                         // Does nothing but dismiss the dialog when tapped
+    //                         {
+    //                             text: "No",
+    //                             onPress: () => {
+    //                             }
+    //                         },
+    //                     ]
+    //                 );
+    //                 else 
+    //                 Alert.alert("You Dont have Permission")
+    //                 }}>
+    //                     <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
+    //                 </TouchableOpacity>
+    //             </View>
+    //         ),
+    //         headerLeft: () => (
+    //             <TouchableOpacity style={styless.roundButton} onPress={() => navigation.goBack()}>
+    //                 <Ionicons name="chevron-back" size={24} color={'#000'} />
+    //             </TouchableOpacity>
+    //         ),
+    //     });
+    // }, [exp]);
 
 
 
@@ -181,7 +229,7 @@ const ExpenseDetailPage = () => {
                     </View>
                 ))}
             </View>
-          
+
 
         </View>
     );
