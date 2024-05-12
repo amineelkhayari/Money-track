@@ -27,9 +27,12 @@ const Expenses = () => {
 
     const usersCollection = collection(db, 'users');
 
+
     const q = query(usersCollection,
+      // where('dateExp', '>=', startOfMonthString),
+      // where('dateExp', '<=', endOfMonthString),
       where('dateExp', '>=', startOfMonthString),
-      where('dateExp', '<=', endOfMonthString),
+      //where('dateExp', '<=', '5/31/2024'),
       orderBy('dateExp', 'desc')
     )
 
@@ -37,25 +40,25 @@ const Expenses = () => {
       next: async (snapshot) => {
         await str.getData("user", setSelectedUser);
         var value = await AsyncStorage.getItem('user');
-        if(value ==null)
+        if (value == null)
           return;
         const todos: GetExpense[] = [];
         const Todos = snapshot.docs.forEach((doc) => {
-          const expense:Expense = doc.data() as Expense;
+          const expense: Expense = doc.data() as Expense;
           const amount = expense.amount;
           const paidBy = expense.paidBy;
-    
+
           // Calculate Mohammed's share in the expense
-          const participants:Participants[] = expense.participants;
+          const participants: Participants[] = expense.participants;
           if (paidBy === value) {
             if (participants.filter((item: Participants) => !item.Payed && item.Value != value).length > 0) {
               todos.push({
                 id: doc.id,
                 ...doc.data()
               } as GetExpense);
-    
+
             }
-    
+
             else if (participants.filter((item: Participants) => item.Value === value).length === 1) {
               todos.push({
                 id: doc.id,
@@ -65,18 +68,18 @@ const Expenses = () => {
           } else {
             if (participants.filter((item: Participants) => item.Value === value && item.Payed == true).length === 1
             ) {
-    
-              
+
+
               todos.push({
                 id: doc.id,
                 ...doc.data()
               } as GetExpense);
             }
-    
-          }
-    
 
-          
+          }
+
+
+
           //alert(doc.metadata.fromCache)
         })
         setExpenses(todos)
@@ -143,15 +146,27 @@ const Expenses = () => {
 
 
     })
-   // console.log("Get Expense: ", ExpensesData)
+    // console.log("Get Expense: ", ExpensesData)
 
     return dataarr;
+  }
+  const convertDate = (newdt: any) => {
+    var parts = newdt.split("/"); // Split the string into parts
+
+    // Format the date as "YYYY-MM-DD"
+    var formattedDate = parts[2] + "-" + parts[0].padStart(2, '0') + "-" + parts[1].padStart(2, '0');
+
+    // Create a new Date object from the formatted date string
+    var dateObject = new Date(formattedDate);
+
+
+    return dateObject.toDateString(); //new Date(""+newdt).toDateString();
   }
 
   const renderItem = ({ item }: { item: GroupedData }) => (
     <View style={styles.group}>
       <View style={{ alignItems: 'center', backgroundColor: "#0101" }}>
-        <Text style={[styles.date, { alignItems: 'baseline' }]}>{item.date}</Text>
+        <Text style={[styles.date, { alignItems: 'baseline' }]}>{convertDate(item.date.toString())}</Text>
         <Text style={{}}>Exp: {item?.exp?.Expense} | Credit: {item?.exp?.Credit} | Debts: {item?.exp?.Debts}</Text>
       </View>
       <FlatList
@@ -172,8 +187,8 @@ const Expenses = () => {
 
               <View style={[styles.transaction, { backgroundColor: transaction.paidBy === selectUser ? "green" : "grey" }]}>
                 <View>
-                  <Text style={{ fontWeight: 'bold' }}>{transaction.description}</Text>
-                  <Text>Amount: {transaction.amount}</Text>
+                  <Text style={{ fontWeight: 'bold' }}>{transaction.description} type : {transaction.cat}</Text>
+                  <Text>At: {transaction.timeExp}</Text>
                 </View>
                 <View>
                   <Text>Parts: {transaction.participants.length}</Text>

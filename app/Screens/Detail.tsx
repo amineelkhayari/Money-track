@@ -1,12 +1,11 @@
 
-import { useLocalSearchParams } from 'expo-router';
-import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert } from 'react-native';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { collection, doc, getDoc, getDocs, query, updateDoc, where, deleteDoc } from 'firebase/firestore';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, Button, Share } from 'react-native';
 import { str } from '../Interfaces/Storage';
 import { db } from '../Interfaces/Firebase';
-
-
+import { Ionicons } from '@expo/vector-icons';
 
 
 const ExpenseDetailPage = () => {
@@ -14,8 +13,9 @@ const ExpenseDetailPage = () => {
     const [exp, setExpenses] = useState<any>();
     const [docsID, setdocsID] = useState<string>('');
     const [selectUser, setSelectedUser] = useState<string>('');
+    const [participants, setParticipants] = useState<Participants[]>([]);
 
-
+    const navigation = useNavigation();
     useEffect(() => {
         str.getData("user", setSelectedUser)
 
@@ -27,46 +27,143 @@ const ExpenseDetailPage = () => {
                 //console.error('Error:', error);
 
             });
-    }, [params.id,exp]); // Add params.id to the dependency array
+    }, [params.id, exp]); // Add params.id to the dependency array
 
-    const [participants, setParticipants] = useState<Participants[]>([]);
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerTitle: "Expense Detail",
+            headerLeft: () => (
+                <TouchableOpacity style={styless.roundButton} onPress={() => navigation.goBack()}>
+                    <Ionicons name="chevron-back" size={24} color={'#000'} />
+                </TouchableOpacity>
+            ),
+            headerRight: () => (
+                <View style={styless.bar}>
+                    <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]} onPress={() => {
+                        if (exp.paidBy === selectUser)
+                            Alert.alert(
+                                "Are your sure?",
+                                "To Delete this Record : " + exp?.description,
+                                [
+                                    // The "Yes" button
+                                    {
+                                        text: "Yes",
+                                        onPress: async () => {
+
+                                            await deleteDoc(doc(db, "users", exp?.transaction));
+                                            router.back();
+                                            //useNavigation().goBack();
+
+                                        },
+                                    },
+                                    // The "No" button
+                                    // Does nothing but dismiss the dialog when tapped
+                                    {
+                                        text: "No",
+                                        onPress: () => {
+                                        }
+                                    },
+                                ]
+                            );
+                        else
+                            Alert.alert("You Dont have Permission")
+                    }}>
+                        <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
+                    </TouchableOpacity>
+                </View>
+            )
+
+
+        });
+    }, [exp])
+
+    // useLayoutEffect(() => {
+
+    //     navigation.setOptions({
+    //         headerTitle: "  Detail of " + exp?.description,
+    //         headerTransparent: false,
+    //         presentation: 'Modal',
+    //         animation: 'fade',
+    //         headerRight: () => (
+    //             <View style={styless.bar}>
+    //                 <TouchableOpacity style={[styless.roundButton,{backgroundColor:"red"}]} onPress={() => {
+    //                   if(exp.paidBy === selectUser)
+    //                   Alert.alert(
+    //                     "Are your sure?",
+    //                     "To Delete this Record : " + exp?.description,
+    //                     [
+    //                         // The "Yes" button
+    //                         {
+    //                             text: "Yes",
+    //                             onPress: async () => {
+
+    //                                 await deleteDoc(doc(db, "users", exp?.transaction));
+    //                                 router.back();
+    //                                 //useNavigation().goBack();
+
+    //                             },
+    //                         },
+    //                         // The "No" button
+    //                         // Does nothing but dismiss the dialog when tapped
+    //                         {
+    //                             text: "No",
+    //                             onPress: () => {
+    //                             }
+    //                         },
+    //                     ]
+    //                 );
+    //                 else 
+    //                 Alert.alert("You Dont have Permission")
+    //                 }}>
+    //                     <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
+    //                 </TouchableOpacity>
+    //             </View>
+    //         ),
+    //         headerLeft: () => (
+    //             <TouchableOpacity style={styless.roundButton} onPress={() => navigation.goBack()}>
+    //                 <Ionicons name="chevron-back" size={24} color={'#000'} />
+    //             </TouchableOpacity>
+    //         ),
+    //     });
+    // }, [exp]);
+
+
+
 
     const handlePay = async (participantIndex: number) => {
-        
+
         try {
             // Get a reference to the document
             const documentRef = doc(db, 'users', docsID);
-            
+
             const participant = exp?.participants.find((participant: Participants) => participant.Value === participants[participantIndex].Value);
             if (participant) {
                 // Update the 'Payed' status for the participant
                 participant.Payed = true;
 
 
-                // Update the document with the modified data
-                //console.log("dddd", exp)
-                //console.log('Participant not found',exp);
+
 
                 await updateDoc(documentRef, exp);
-                Alert.alert(participant.Value," send money to "+exp.paidBy);
+                Alert.alert(participant.Value, " Paid " + (exp.amount / exp.participants.length).toFixed(2) + " " + exp.paidBy);
                 setExpenses(exp)
 
-               // console.log('Participant payed status updated successfully');
+                // console.log('Participant payed status updated successfully');
             } else {
-               // console.log('Participant not found');
+                // console.log('Participant not found');
             }
 
-            //} else {
-            //console.log('Document does not exist');
-            //}
+
         } catch (error) {
-           // console.error('Error updating participant payed status:', error);
+            // console.error('Error updating participant payed status:', error);
         }
 
     };
 
     async function getTotalDebtForUser() {
         const transaction = params.id;
+        if (params.id === undefined || params.id == null || params.id == "")
+            useNavigation().goBack();
         const usersCollection = collection(db, 'users');
         const q = query(usersCollection, where('transaction', '==', transaction));
         const querySnapshot = await getDocs(q);
@@ -77,8 +174,8 @@ const ExpenseDetailPage = () => {
                 amount: expenseData.amount,
                 description: expenseData.description,
                 dateExp: expenseData.dateExp,
-                cat:expenseData.cat,
-                timeExp:expenseData.timeExp,
+                cat: expenseData.cat,
+                timeExp: expenseData.timeExp,
                 transaction: expenseData.transaction,
                 paidBy: expenseData.paidBy,
                 participants: expenseData.participants,
@@ -89,8 +186,7 @@ const ExpenseDetailPage = () => {
             return expense;
         } else {
             //console.log("No expense found for transaction ID:", transaction);
-            Alert.alert("404","No Data Found")
-            return null;
+            useNavigation().goBack();
         }
     }
 
@@ -103,6 +199,7 @@ const ExpenseDetailPage = () => {
 
         }}><Text>Loading...</Text></View>;
     }
+
 
     return (
         <View style={styles.container}>
@@ -120,7 +217,7 @@ const ExpenseDetailPage = () => {
                         <Text>{participant.Value}</Text>
                         {participant.Payed || exp.paidBy == participant.Value
                             ? (
-                                <Text style={styles.paidText}>Paid : {(exp.amount/exp.participants.length).toFixed(2)} MAD</Text>
+                                <Text style={styles.paidText}>Paid : {(exp.amount / exp.participants.length).toFixed(2)} MAD</Text>
                             ) : (
                                 ((exp.paidBy == selectUser || participant.Value == selectUser) &&
                                     (
@@ -132,16 +229,46 @@ const ExpenseDetailPage = () => {
                     </View>
                 ))}
             </View>
+
+
         </View>
     );
 };
+const styless = StyleSheet.create({
 
+    roundButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 50,
+        backgroundColor: 'white',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff',
+    },
+    bar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+    },
+    header: {
+        backgroundColor: '#fff',
+        height: 100,
+        opacity: 1,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: 'grey',
+    }
+});
 const styles = StyleSheet.create({
+    button: {
+        color: 'red', // Set the color to red
+    },
     container: {
         flex: 1,
         padding: 20,
         backgroundColor: '#fff',
-        paddingTop: StatusBar.currentHeight
+        paddingTop: StatusBar.currentHeight,
+        height: "100%"
     },
     expenseCard: {
         backgroundColor: '#f0f0f0',
@@ -196,9 +323,3 @@ const styles = StyleSheet.create({
 });
 
 export default ExpenseDetailPage;
-
-
-
-
-
-

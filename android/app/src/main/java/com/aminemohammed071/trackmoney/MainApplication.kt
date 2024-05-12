@@ -1,4 +1,4 @@
-package com.aminemohammed071.maoneytracker
+package com.aminemohammed071.trackmoney
 
 import android.app.Application
 import android.content.res.Configuration
