@@ -1,6 +1,6 @@
 import { View, Text, Button, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { collection, getDocs, onSnapshot, orderBy, query, where,serverTimestamp, Timestamp } from 'firebase/firestore';
 
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,7 +20,9 @@ const Expenses = () => {
 
     const currentDate = new Date();
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+   // const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+
     // Format dates as strings
     const startOfMonthString = startOfMonth.toLocaleDateString();
     const endOfMonthString = endOfMonth.toLocaleDateString();
@@ -31,9 +33,9 @@ const Expenses = () => {
     const q = query(usersCollection,
       // where('dateExp', '>=', startOfMonthString),
       // where('dateExp', '<=', endOfMonthString),
-      where('dateExp', '>=', startOfMonthString),
-      //where('dateExp', '<=', '5/31/2024'),
-      orderBy('dateExp', 'desc')
+      where('createdAt', '>=', startOfMonth),
+      where('createdAt', '<', endOfMonth),
+      orderBy('createdAt', 'desc')
     )
 
     const subscribe = onSnapshot(q, {

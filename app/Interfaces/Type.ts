@@ -13,7 +13,8 @@ type Participants = {
     paidBy: string,
     cat: string,
     participants: Participants[],
-    sync:boolean
+    sync:boolean,
+    createdAt: Date
   }
 
   type GetExpense = {
@@ -37,7 +38,8 @@ type Participants = {
     paidBy: string,
     participants: Participants[],
     sync: boolean,
-    partName: string
+    partName: string,
+    createdAt: Date
   }
   interface GroupedData {
     date: string;
