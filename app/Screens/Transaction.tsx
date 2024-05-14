@@ -126,7 +126,7 @@ const History = () => {
     // Define start and end dates for the current month
     const currentDate = new Date();
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     // Format dates as strings
     const startOfMonthString = startOfMonth.toLocaleDateString();
     const endOfMonthString = endOfMonth.toLocaleDateString();
@@ -134,9 +134,9 @@ const History = () => {
     const usersCollection = collection(db, 'users');
 
     const q = query(usersCollection,
-      where('dateExp', '>=', startOfMonthString),
-     // where('dateExp', '<=', endOfMonthString),
-      orderBy('dateExp', 'desc')
+      where('createdAt', '>=', startOfMonth),
+      where('createdAt', '<', endOfMonth),
+      orderBy('createdAt', 'desc')
     )
 
     const subscribe = onSnapshot(q, {

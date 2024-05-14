@@ -66,7 +66,7 @@ const ExpenseDetailPage = () => {
                                 ]
                             );
                         else
-                            Alert.alert("You Dont have Permission")
+                            Alert.alert("You Dont have Permission",'For Delete This Record')
                     }}>
                         <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
                     </TouchableOpacity>
@@ -179,7 +179,8 @@ const ExpenseDetailPage = () => {
                 transaction: expenseData.transaction,
                 paidBy: expenseData.paidBy,
                 participants: expenseData.participants,
-                sync: expenseData.sync
+                sync: expenseData.sync,
+                createdAt:expenseData.createdAt
             };
             setParticipants(expense.participants);
             setdocsID(docsID);

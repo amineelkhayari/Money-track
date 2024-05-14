@@ -44,6 +44,9 @@ export default function RootLayout() {
         if (val.length > 0) {
           val.forEach(async (load: Expense) => {
             load.sync = !load.sync;
+           
+           
+            load.createdAt=new Date(load.createdAt);
             if (isConnected && Rechable) await setDoc(doc(db, 'users', load.transaction), load);
             else setDoc(doc(db, 'users', load.transaction), load);
 

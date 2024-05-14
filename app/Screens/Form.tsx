@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, View, Text, TextInput, FlatList, Button, Alert, KeyboardAvoidingView } from 'react-native';
 
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import { Timestamp, addDoc, collection, doc, getDocs, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { str } from '../Interfaces/Storage';
@@ -22,7 +22,6 @@ export default function ModalScreen() {
   const [PayedBy, SetPayedBy] = useState<string>('');
   const [selectedCat, setSelectedCat] = useState<string>("");
   const [Price, SetPrice] = useState<string>("");
-  const [Title, SetTitle]: any = useState();
 
 
   //const [Price, SetPrice]: any = useState(0);
@@ -43,7 +42,8 @@ export default function ModalScreen() {
     transaction: "",
     dateExp: currentDate.toLocaleDateString(),
     timeExp: currentDate.toLocaleTimeString(),
-    sync: false
+    sync: false,
+    createdAt: currentDate
 
 
   });
@@ -57,7 +57,7 @@ export default function ModalScreen() {
       // console.log(state.isConnected)
 
     });
-   
+
     loadExpenses();
 
     return () => {
@@ -101,12 +101,13 @@ export default function ModalScreen() {
   const saveExpensesLocally = async () => {
     try {
       await AsyncStorage.setItem('LocalExpense', JSON.stringify(expenses));
+      //Alert.alert("Data add Loccally");
       // console.log("Expenses saved locally:", expenses);
     } catch (error) {
       //console.error("Error saving expenses locally:", error);
     }
   };
-  
+
 
   return (
     <View style={styles.container}>
@@ -114,7 +115,7 @@ export default function ModalScreen() {
       <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
 
         <Text style={styles.label}>Description:</Text>
-        
+
 
         <TextInput
           style={styles.textInput}
@@ -163,7 +164,7 @@ export default function ModalScreen() {
           )}
           keyExtractor={item => item.ID.toString()}
         />
-        <Toast message={ exp.description+" is Added" } showToast={done} />
+        <Toast message={exp.description + " is Added"} showToast={done} />
 
       </KeyboardAvoidingView>
 
@@ -245,7 +246,8 @@ export default function ModalScreen() {
             cat: '',
             dateExp: currentDate.toLocaleDateString(),
             timeExp: currentDate.toLocaleTimeString(),
-            sync: false
+            sync: false,
+            createdAt: currentDate
 
           });
           //console.log('New data added successfully', expenses);
@@ -259,6 +261,55 @@ export default function ModalScreen() {
         //newDocumentData.participants.push();
 
       }} />
+      {/* <Button onPress={async () => {
+        // Assuming you have a reference to your Firestore collection
+        const collectionRef = collection(db, 'users');
+
+        // Fetch documents from the collection
+        getDocs(collectionRef)
+          .then((querySnapshot) => {
+            querySnapshot.forEach(async (doc) => {
+              try {
+                const data = doc.data();
+                // Check if the document already has a createdAt field
+                if (!data.createdAt) {
+                  // Combine dateExp and timeExp into a JavaScript Date object
+                  const dateParts = data.dateExp.split('/');
+                  const timeParts = data.timeExp.split(':');
+                  const combinedDateTime = new Date(
+                    parseInt(dateParts[2]), // year
+                    parseInt(dateParts[0]) - 1, // month (0-indexed)
+                    parseInt(dateParts[1]), // day
+                    parseInt(timeParts[0]), // hours
+                    parseInt(timeParts[1]), // minutes
+                    parseInt(timeParts[2]) // seconds
+                  );
+
+                  // Convert combinedDateTime to a Firestore Timestamp object
+                  const createdAt = Timestamp.fromDate(combinedDateTime);
+
+                  // Update the document with the new createdAt field
+                  await updateDoc(doc.ref, { createdAt });
+                  console.log("Document updated with createdAt field:", doc.id);
+                } else {
+                  console.log("Document already has createdAt field:", doc.id);
+                }
+              } catch (error) {
+                console.error("Error updating document:", error);
+              }
+            });
+          })
+          .catch((error) => {
+            console.error("Error getting documents: ", error);
+          });
+
+        // await setDoc(doc(db, 'tester',""+new Date().getTime() ), {
+        //   createAt:serverTimestamp(),
+        //   createpm:new Date(),
+
+        // });
+
+      }} title='Test' /> */}
     </View>
   );
 }
