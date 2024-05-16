@@ -1,8 +1,7 @@
-import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TextInput, FlatList, Button, Alert, KeyboardAvoidingView, useColorScheme } from 'react-native';
 
-import {  doc,  setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { str } from '../Interfaces/Storage';
@@ -104,13 +103,13 @@ export default function ModalScreen() {
     },
     textInput: {
       height: 40, borderColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, borderWidth: 1, marginBottom: 20, padding: 10,
-      color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
-      backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
     },
     container: {
       flex: 1,
       padding: 15,
-      backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
     },
     title: {
       fontSize: 20,
@@ -233,10 +232,10 @@ export default function ModalScreen() {
 
           } else {
             // Add expense locally
-            
+
             expenses.push(exp)
             setDoc(doc(db, 'users', exp.transaction), exp);
-          
+
             await saveExpensesLocally();
             Alert.alert('Data Add On Local.', 'With Success');
           }
@@ -264,11 +263,11 @@ export default function ModalScreen() {
           });
 
         } catch (error) {
-           console.error('Error adding new data:', error);
+          console.error('Error adding new data:', error);
         }
 
       }} />
-      
+
     </View>
   );
 }

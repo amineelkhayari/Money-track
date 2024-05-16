@@ -1,8 +1,8 @@
 
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
-import { collection, doc, getDoc, getDocs, query, updateDoc, where, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, query, updateDoc, where, deleteDoc } from 'firebase/firestore';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, Button, Share, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, useColorScheme } from 'react-native';
 import { str } from '../Interfaces/Storage';
 import { db } from '../Interfaces/Firebase';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,7 +10,7 @@ import { ThemeColor } from '../Interfaces/Themed';
 
 
 const ExpenseDetailPage = () => {
-    const colorScheme=useColorScheme();
+    const colorScheme = useColorScheme();
     const styless = StyleSheet.create({
 
         roundButton: {
@@ -21,8 +21,8 @@ const ExpenseDetailPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
-            marginLeft:10,
-            marginRight:10
+            marginLeft: 10,
+            marginRight: 10
         },
         bar: {
             flexDirection: 'row',
@@ -95,7 +95,7 @@ const ExpenseDetailPage = () => {
                                 ]
                             );
                         else
-                            Alert.alert("You Dont have Permission",'For Delete This Record')
+                            Alert.alert("You Dont have Permission", 'For Delete This Record')
                     }}>
                         <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
                     </TouchableOpacity>
@@ -106,7 +106,7 @@ const ExpenseDetailPage = () => {
         });
     }, [exp])
 
-    
+
 
     const handlePay = async (participantIndex: number) => {
 
@@ -154,7 +154,7 @@ const ExpenseDetailPage = () => {
                 paidBy: expenseData.paidBy,
                 participants: expenseData.participants,
                 sync: expenseData.sync,
-                createdAt:expenseData.createdAt
+                createdAt: expenseData.createdAt
             };
             setParticipants(expense.participants);
             setdocsID(docsID);
@@ -171,17 +171,17 @@ const ExpenseDetailPage = () => {
             flex: 1,
             justifyContent: 'center', // Vertically center content
             alignItems: 'center',
-            backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
 
-        }}><Text style={{ color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Loading...</Text></View>;
+        }}><Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Loading...</Text></View>;
     }
 
     const styles = StyleSheet.create({
-        
+
         container: {
             flex: 1,
             padding: 20,
-            backgroundColor:     ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background            ,
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
             paddingTop: StatusBar.currentHeight,
             height: "100%"
         },
@@ -191,7 +191,7 @@ const ExpenseDetailPage = () => {
             marginBottom: 15,
             borderRadius: 10,
             elevation: 3,
-            shadowColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background            ,
+            shadowColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.2,
             shadowRadius: 2,
@@ -204,7 +204,7 @@ const ExpenseDetailPage = () => {
         text: {
             fontSize: 16,
             marginBottom: 5,
-            color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
+            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
         },
         subHeading: {
             fontSize: 18,
@@ -216,13 +216,13 @@ const ExpenseDetailPage = () => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             marginBottom: 5,
-            color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
+            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
         },
         payButtonright: {
-            backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary            ,
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
         },
         payButtonleft: {
-            backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary            ,
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
         },
         payButton: {
             paddingVertical: 5,
@@ -230,19 +230,21 @@ const ExpenseDetailPage = () => {
             borderRadius: 5,
         },
         payButtonText: {
-            color:     ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background            ,
+            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
             fontWeight: 'bold',
         },
         paidText: {
-            color:     ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary
+            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary
             ,
             fontWeight: 'bold',
         },
     });
-   
-    
+
+
     return (
         <View style={styles.container}>
+            <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary} barStyle="light-content" />
+
             <View style={styles.expenseCard}>
                 <Text style={styles.heading}>Description: {exp.description}</Text>
                 <Text style={styles.text}>Total Price: {exp.amount} MAD</Text>
@@ -254,7 +256,7 @@ const ExpenseDetailPage = () => {
                 <Text style={styles.subHeading}>Participants:</Text>
                 {participants.map((participant, index) => (
                     <View key={index} style={styles.participant}>
-                        <Text style={{color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text}}>{participant.Value}</Text>
+                        <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{participant.Value}</Text>
                         {participant.Payed || exp.paidBy == participant.Value
                             ? (
                                 <Text style={styles.paidText}>Paid : {(exp.amount / exp.participants.length).toFixed(2)} MAD</Text>

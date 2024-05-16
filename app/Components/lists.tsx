@@ -77,8 +77,28 @@ const ListArray = (props: pickerProps) => {
       const renderItem = ({ item }: { item: GroupedData }) => (
         <View style={styles.group}>
           <View style={{ alignItems: 'center', backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }}>
-            <Text style={[styles.date, { alignItems: 'baseline' }]}>{convertDate(item.date.toString())}</Text>
-            <Text style={{ color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text}}>Exp: {item?.exp?.Expense} | Credit: {item?.exp?.Credit} | Debts: {item?.exp?.Debts}</Text>
+            <Text style={[styles.date, { alignItems: 'baseline' }]}>
+              
+              { props.types != 'Expenses' ? item.date.toString() : convertDate(item.date.toString()) }
+            
+            </Text>
+            <Text style={{ color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text}}>
+              
+            {
+              (props.types != 'Expenses' ? (
+                <>
+                  Total Of { props.types } :  {item?.exp}
+                </>
+              ):
+            <>
+              Exp: {item?.exp?.Expense} | Credit: {item?.exp?.Credit} | Debts: {item?.exp?.Debts}
+
+            </>
+            )
+
+            }
+              
+              </Text>
           </View>
           <FlatList
             data={item.data}
@@ -96,7 +116,7 @@ const ListArray = (props: pickerProps) => {
                   }}>
                   <Text style={{ fontWeight: 'bold', color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}> + Payed By: {transaction.paidBy}</Text>
     
-                  <View style={[styles.transaction, { backgroundColor: transaction.paidBy === props.selectUser ? "green" : "grey" }]}>
+                  <View style={[styles.transaction, { backgroundColor: transaction.paidBy === props.selectUser ? ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary : ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }]}>
                     <View>
                       <Text style={{ fontWeight: 'bold',color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{transaction.description} type : {transaction.cat}</Text>
                       <Text style={{color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text}}>At: {transaction.timeExp}</Text>

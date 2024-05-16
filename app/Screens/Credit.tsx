@@ -1,14 +1,16 @@
-import { View, Text, Button, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, useColorScheme } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
-
-import { router } from 'expo-router';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../Interfaces/Firebase';
 import { str } from '../Interfaces/Storage';
 import { coupageGeneric } from '../Interfaces/Method';
+import ListArray from '../Components/lists';
+import { ThemeColor } from '../Interfaces/Themed';
 
 const Credits = () => {
+  const colorScheme = useColorScheme();
+
 
   const [exp, setExpenses] = useState<ExpenseCreadit[]>([]);
   const [selectUser, setSelectedUser] = useState<string>('');
@@ -55,7 +57,7 @@ const Credits = () => {
 
         });//enf foreach
         setExpenses(todos)
-        var value = await AsyncStorage.getItem('LocalExpense');
+        //var value = await AsyncStorage.getItem('LocalExpense');
         // if (value != null) {
         //   //console.log("Value ", value)
 
@@ -72,67 +74,79 @@ const Credits = () => {
 
 
 
+  const styles = StyleSheet.create({
+    div: {
+      height: 1, // Adjust height as needed
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, // Adjust color as needed
+      marginVertical: 10, // Adjust vertical spacing as needed
+    },
+    divider: {
+      height: 3, // Adjust height as needed
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, // Adjust color as needed
+      marginVertical: 10, // Adjust vertical spacing as needed
+    },
+    container: {
+      flex: 1,
+    },
+    group: {
+      marginBottom: 20,
+      paddingHorizontal: 20,
+    },
+    date: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+    },
+    transaction: {
+      padding: 15,
+      backgroundColor: 
+      ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+      borderRadius: 8,
+      marginBottom: 10,
+      shadowColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    description: {
+      fontSize: 16,
+      marginBottom: 5,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+    },
+    amount: {
+      fontSize: 14,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+    }
+  });
+  
+
   if (expGrouped.length == 0) {
     return <View style={{
       flex: 1,
       justifyContent: 'center', // Vertically center content
       alignItems: 'center',
-    }}><Text>No Credit...</Text></View>;
+      backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+    }}><Text style={{color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text}}>No Credit...</Text></View>;
   }
-  const renderItem = ({ item }: { item: GroupedData }) => (
-    <View style={styles.group}>
-      <View style={{ alignItems: 'center', backgroundColor: "#0101" }}>
-        <Text style={[styles.date, { alignItems: 'baseline' }]}>All Credit For : {item.date}</Text>
-        <Text style={{}}>Total Of Credit: {item?.exp}</Text>
 
-      </View>
-      <FlatList
-        data={item.data}
-        keyExtractor={(transaction) => transaction.transaction}
-        renderItem={({ item: transaction }) => (
-          <>
-            <TouchableOpacity
-              key={transaction.transaction}
-              onPress={() => {
-                router.push(
-                  {
-                    pathname: 'Screens/Detail', params: { id: transaction.transaction }
-                  }
-                )
-              }}>
-
-              <View style={[styles.transaction, { backgroundColor: transaction.paidBy === selectUser ? "green" : "grey" }]}>
-                <View>
-                <Text style={{ fontWeight: 'bold' }}>{transaction.description} type : {transaction.cat}</Text>
-                  <Text>At: {transaction.timeExp}</Text>
-                </View>
-                <View>
-                  <Text>Parts: {transaction.participants.length}</Text>
-                  <Text>Amount: {(transaction.amount / transaction.participants.length).toFixed(2)}/ {transaction.amount}</Text>
-                </View>
-
-              </View>
-
-            </TouchableOpacity>
-            <View style={styles.div} />
-
-          </>
-
-        )}
-      />
-      <View style={styles.divider} />
-
-    </View>
-  );
   return (
 
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background}]}>
 
-      <FlatList
+      {/* <FlatList
         data={expGrouped}
         keyExtractor={(group) => group.date}
         renderItem={renderItem}
-      />
+      /> */}
+      <ListArray Data={expGrouped} selectUser={selectUser} types='Credit'  />
+
     </View>
   )
 }
@@ -140,56 +154,3 @@ const Credits = () => {
 export default Credits
 
 
-
-
-const styles = StyleSheet.create({
-  div: {
-    height: 1, // Adjust height as needed
-    backgroundColor: 'gray', // Adjust color as needed
-    marginVertical: 10, // Adjust vertical spacing as needed
-  },
-  divider: {
-    height: 3, // Adjust height as needed
-    backgroundColor: 'red', // Adjust color as needed
-    marginVertical: 10, // Adjust vertical spacing as needed
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  group: {
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  date: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  transaction: {
-    padding: 15,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    marginBottom: 10,
-    shadowColor: '#000',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: '#333',
-  },
-  amount: {
-    fontSize: 14,
-    color: '#666',
-  }
-});

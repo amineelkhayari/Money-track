@@ -7,7 +7,7 @@ import { db } from './Interfaces/Firebase';
 import { useFonts } from 'expo-font';
 import NetInfo from '@react-native-community/netinfo';
 import { str } from './Interfaces/Storage';
-import { Alert, useColorScheme } from 'react-native';
+import { Alert, StatusBar, useColorScheme } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { ThemeColor } from './Interfaces/Themed';
 
