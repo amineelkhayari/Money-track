@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
@@ -11,6 +11,8 @@ import * as Updates from 'expo-updates';
 import { DropDownList } from '../Components/Picker';
 import { ThemeColor } from '../Interfaces/Themed';
 import { useColorScheme } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent, Event } from '@react-native-community/datetimepicker';
+
 
 async function onFetchUpdateAsync() {
   try {
@@ -39,6 +41,11 @@ const History = () => {
   const [month, setMonth]: any = useState(new Date().toLocaleDateString('default', { month: 'numeric' }));
   const [daySelect, SetdaySelected] = useState(new Date().getDate());
   const [day, setDay]: any = useState(new Date(new Date().getFullYear(), month, 0).getDate())
+
+  const [date, setDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+
+
   const {
     currentlyRunning,
     availableUpdate,
@@ -186,7 +193,7 @@ const History = () => {
       fontSize: 18,
       fontWeight: 'bold',
       marginBottom: 10,
-      color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
     },
     input: {
       width: '100%',
@@ -234,7 +241,7 @@ const History = () => {
           {
             users.map((item) => {
               return <View key={item.Value}>
-                <Button  title={item.Value} onPress={() => {
+                <Button title={item.Value} onPress={() => {
                   str.storeData("user", item.Value, setSelectedUser);
                 }} />
 
@@ -249,6 +256,17 @@ const History = () => {
       </View>
     );
   }
+  const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const currentDate = selectedDate || date;
+    setShowPicker(Platform.OS === 'ios');
+    setDate(currentDate);
+    console.log(currentDate)
+  };
+
+  const showDatepicker = () => {
+    setShowPicker(true);
+  };
+  const maxDate = new Date(); // Initialize maxDate to current date
 
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background, flex: 1 }}>
@@ -275,8 +293,8 @@ const History = () => {
                     try {
                       const update = await Updates.checkForUpdateAsync();
                       if (update.isAvailable) {
-                       
-                       
+
+
                         onFetchUpdateAsync();
                       }
                     } catch (err) {
@@ -285,7 +303,7 @@ const History = () => {
                     }
                   }}>
                   <Text
-                    style={[styles.modalTitle,{ textAlign: 'center' }]}
+                    style={[styles.modalTitle, { textAlign: 'center' }]}
 
                   >Update</Text>
                 </TouchableOpacity>
@@ -294,7 +312,7 @@ const History = () => {
 
                   onPress={handleCloseModal}>
                   <Text
-                    style={[styles.modalTitle,{ textAlign: 'center' }]}
+                    style={[styles.modalTitle, { textAlign: 'center' }]}
 
                   >Later</Text>
                 </TouchableOpacity>
@@ -305,17 +323,19 @@ const History = () => {
       )}
 
       <View>
-        <DropDownList
-          Data={monthNames}
-          label="month"
-          styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
-          styletextInput={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }}
-          onchange={(value) => setMonth(value)
-          }
-          selectedVal={month}
-          placerholder='Select Month By'
-        />
+        <Button onPress={showDatepicker} title="Show date picker!" />
       </View>
+      {showPicker && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={date}
+          mode="date"
+          is24Hour={true}
+          display="default"
+          onChange={onChange}
+          maximumDate={maxDate}
+        />
+      )}
       <Dashboard
         CreditAmount={Calculate?.Credit}
         DebtAmount={Calculate?.Debts}
