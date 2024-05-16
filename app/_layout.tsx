@@ -2,12 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { addDoc, collection, doc, setDoc, writeBatch } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { db } from './Interfaces/Firebase';
 import { useFonts } from 'expo-font';
 import NetInfo from '@react-native-community/netinfo';
 import { str } from './Interfaces/Storage';
-import { Alert } from 'react-native';
+import { Alert, StatusBar, useColorScheme } from 'react-native';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeColor } from './Interfaces/Themed';
+
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -80,17 +83,21 @@ export default function RootLayout() {
 function Layout() {
 
 
+  const colorScheme = useColorScheme();
+  
 
 
   return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+
     <Stack
 
       screenOptions={{
         headerShown: false,
         headerStyle: {
-          backgroundColor: '#0101',
+          backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
         },
-        headerTintColor: '#333',
+        headerTintColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
@@ -105,5 +112,7 @@ function Layout() {
              }} />
 
     </Stack>
+    </ThemeProvider>
+
   );
 }

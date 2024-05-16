@@ -1,13 +1,15 @@
-import { View, Text, Button, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, useColorScheme } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
-import { router } from 'expo-router';
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../Interfaces/Firebase';
 import { coupageGeneric } from '../Interfaces/Method';
 import { str } from '../Interfaces/Storage';
+import { ThemeColor } from '../Interfaces/Themed';
+import ListArray from '../Components/lists';
 
 const Debts = () => {
+  const colorScheme = useColorScheme();
 
   const [exp, setExpenses] = useState<GetExpense[]>([]);
   const [selectUser, setSelectedUser] = useState<string>('');
@@ -29,28 +31,28 @@ const Debts = () => {
       where('createdAt', '<', endOfMonth),
       orderBy('createdAt', 'desc')
     );
-    const subscribe = onSnapshot(q,{
-      next:async (snapshot)=>{
+    const subscribe = onSnapshot(q, {
+      next: async (snapshot) => {
         await str.getData("user", setSelectedUser);
         var value = await AsyncStorage.getItem('user');
         const todos: GetExpense[] = [];
         const ExpDebts = snapshot.docs.forEach((doc) => {
-        const expense = doc.data();
-      const amount = expense.amount;
-      const paidBy = expense.paidBy;
-      // Calculate Mohammed's share in the expense
-      const participants = expense.participants;
-      if (paidBy !== value) {
-        participants.forEach((participant: Participants) => {
-          if (participant.Value == value && !participant.Payed) {
-            todos.push({
-              id: doc.id,
-              ...doc.data()
-            } as GetExpense);
-          }
+          const expense = doc.data();
+          const amount = expense.amount;
+          const paidBy = expense.paidBy;
+          // Calculate Mohammed's share in the expense
+          const participants = expense.participants;
+          if (paidBy !== value) {
+            participants.forEach((participant: Participants) => {
+              if (participant.Value == value && !participant.Payed) {
+                todos.push({
+                  id: doc.id,
+                  ...doc.data()
+                } as GetExpense);
+              }
 
-        });
-      }
+            });
+          }
 
         });
         setExpenses(todos)
@@ -61,130 +63,86 @@ const Debts = () => {
     })
 
     //str.getData("user", setSelectedUser)
-    return ()=>subscribe();
+    return () => subscribe();
 
   }, [])
 
-  
-  const renderItem = ({ item }: { item: GroupedData }) => (
-    <View style={styles.group}>
-      <View style={{ alignItems: 'center', backgroundColor: "#0101" }}>
-        <Text style={[styles.date, { alignItems: 'baseline' }]}>All Paid By: {item.date}</Text>
-        {/* <Text style={{}}>Total Of Debts: {item?.exp?.Debts}</Text> */}
-        <Text style={{}}>Total Of Debts: {item?.exp}</Text>
+
+  const styles = StyleSheet.create({
+    div: {
+      height: 1, // Adjust height as needed
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, // Adjust color as needed
+      marginVertical: 10, // Adjust vertical spacing as needed
+    },
+    divider: {
+      height: 3, // Adjust height as needed
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, // Adjust color as needed
+      marginVertical: 10, // Adjust vertical spacing as needed
+    },
+    container: {
+      flex: 1,
+    },
+    group: {
+      marginBottom: 20,
+      paddingHorizontal: 20,
+    },
+    date: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+    },
+    transaction: {
+      padding: 15,
+      backgroundColor:
+        ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+      borderRadius: 8,
+      marginBottom: 10,
+      shadowColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    description: {
+      fontSize: 16,
+      marginBottom: 5,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+    },
+    amount: {
+      fontSize: 14,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+    }
+  });
 
 
-      </View>
-      <FlatList
-        data={item.data}
-        keyExtractor={(transaction) => transaction.transaction}
-        renderItem={({ item: transaction }) => (
-          <>
-            <TouchableOpacity
-              key={transaction.transaction}
-              onPress={() => {
-                router.push(
-                  {
-                    pathname: 'Screens/Detail', params: { id: transaction.transaction }
-                  }
-                )
-              }}>
 
-              <View style={[styles.transaction, { backgroundColor: transaction.paidBy === selectUser ? "green" : "grey" }]}>
-                <View>
-                <Text style={{ fontWeight: 'bold' }}>{transaction.description} type : {transaction.cat}</Text>
-                  <Text>At: {transaction.timeExp}</Text>
-                </View>
-                <View>
-                  <Text>Parts: {transaction.participants.length}</Text>
-                  <Text>Amount: {(transaction.amount / transaction.participants.length).toFixed(2)}/ {transaction.amount}</Text>
-                </View>
-
-              </View>
-
-            </TouchableOpacity>
-            <View style={styles.div} />
-
-          </>
-
-        )}
-      />
-      <View style={styles.divider} />
-
-    </View>
-  );
-
-
-  if (!exp) {
-    return <View style={{flex: 1,
+  if (expGrouped.length == 0) {
+    return <View style={{
+      flex: 1,
       justifyContent: 'center', // Vertically center content
-      alignItems: 'center', }}><Text>Loading...</Text></View>;
+      alignItems: 'center',
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+    }}><Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>You Don't any Debts ...</Text></View>;
   }
   return (
-   
-    <View style={styles.container}>
-      
-      <FlatList
+
+    <View style={[styles.container, { backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background }]}>
+
+      {/* <FlatList
         data={expGrouped}
         keyExtractor={(group) => group.date}
         renderItem={renderItem}
-      />
+      /> */}
+      <ListArray Data={expGrouped} selectUser={selectUser} types='Debts' />
+
     </View>
   )
 }
 
 export default Debts
-
-
-
-const styles = StyleSheet.create({
-  div: {
-    height: 1, // Adjust height as needed
-    backgroundColor: 'gray', // Adjust color as needed
-    marginVertical: 10, // Adjust vertical spacing as needed
-  },
-  divider: {
-    height: 3, // Adjust height as needed
-    backgroundColor: 'red', // Adjust color as needed
-    marginVertical: 10, // Adjust vertical spacing as needed
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  group: {
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  date: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  transaction: {
-    padding: 15,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    marginBottom: 10,
-    shadowColor: '#000',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: '#333',
-  },
-  amount: {
-    fontSize: 14,
-    color: '#666',
-  }
-});
