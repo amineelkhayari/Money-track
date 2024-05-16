@@ -1,50 +1,52 @@
 {
-  "expo": {
-    "name": "Track Money",
-    "slug": "track-money",
-    "scheme": "trackmoney",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "runtimeVersion": {
-        "policy": "appVersion"
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.aminemohammed071.trackmoney"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-router"
-    ],
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "91925bb3-e0b5-4116-a829-cee6f99acd78"
-      }
-    },
-    "owner": "aminemohammed071",
-    "runtimeVersion": "1.0.0",
-    "updates": {
-      "url": "https://u.expo.dev/91925bb3-e0b5-4116-a829-cee6f99acd78"
+    "expo": {
+        "userInterfaceStyle": "automatic",
+
+        "name": "Track Money",
+        "slug": "track-money",
+        "scheme": "trackmoney",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "cover",
+            "backgroundColor": "#ffffff"
+        },
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": true,
+            "runtimeVersion": {
+                "policy": "appVersion"
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#ffffff"
+            },
+            "package": "com.aminemohammed071.trackmoney"
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "plugins": [
+            "expo-router"
+        ],
+        "extra": {
+            "router": {
+                "origin": false
+            },
+            "eas": {
+                "projectId": "91925bb3-e0b5-4116-a829-cee6f99acd78"
+            }
+        },
+        "owner": "aminemohammed071",
+        "runtimeVersion": "1.0.0",
+        "updates": {
+            "url": "https://u.expo.dev/91925bb3-e0b5-4116-a829-cee6f99acd78"
+        }
     }
-  }
 }

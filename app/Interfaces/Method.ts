@@ -103,3 +103,15 @@ const CalculateExpense = (data: Expense[], userId: string) => {
   return res;
 
 }
+export const convertDate = (newdt: any) => {
+  var parts = newdt.split("/"); // Split the string into parts
+
+  // Format the date as "YYYY-MM-DD"
+  var formattedDate = parts[2] + "-" + parts[0].padStart(2, '0') + "-" + parts[1].padStart(2, '0');
+
+  // Create a new Date object from the formatted date string
+  var dateObject = new Date(formattedDate);
+
+
+  return dateObject.toDateString(); //new Date(""+newdt).toDateString();
+}

@@ -10,6 +10,10 @@ import { coupageGeneric } from '../Interfaces/Method';
 import NetInfo from "@react-native-community/netinfo";
 import * as Updates from 'expo-updates';
 import { DropDownList } from '../Components/Picker';
+import { ThemeColor } from '../Interfaces/Themed';
+import { DarkTheme, DefaultTheme, NavigationContainer, ThemeProvider } from '@react-navigation/native';
+import { useColorScheme} from 'react-native';
+
 async function onFetchUpdateAsync() {
   try {
     const update = await Updates.checkForUpdateAsync();
@@ -25,6 +29,8 @@ async function onFetchUpdateAsync() {
 }
 
 const History = () => {
+  const colorScheme = useColorScheme();
+
 
   const [selectedUser, setSelectedUser] = useState<string>('');
 
@@ -239,66 +245,10 @@ const History = () => {
     setModalVisible(false);
   };
 
-  if (inputValue == '1') {
-
-
-
-    return (
-      <View >
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={handleCloseModal}
-          style={{ width: "100%" }}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>New Update {Updates.runtimeVersion}</Text>
-              <Text ></Text>
-
-
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: "100%" }}>
-                <TouchableOpacity
-                  style={{ flexBasis: "45%", backgroundColor: "#3133", padding: 10, borderRadius: 15 }}
-                  onPress={async () => {
-                    try {
-                      const update = await Updates.checkForUpdateAsync();
-                      if (update.isAvailable) {
-
-                        setInputValue(JSON.stringify(update));
-                      }
-                    } catch (err) {
-                      console.error(err);
-                      // Handle errors gracefully
-                    }
-                  }}>
-                  <Text
-                    style={{ textAlign: 'center' }}
-
-                  >Update</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{ flexBasis: "45%", backgroundColor: "#3133", padding: 10, borderRadius: 15 }}
-
-                  onPress={handleCloseModal}>
-                  <Text
-                    style={{ textAlign: 'center' }}
-
-                  >Later</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-
-      </View>
-    );
-  }
 
   if (selectedUser == "") {
     return (
-      <View style={{ paddingTop: StatusBar.currentHeight }}>
+      <View style={{ paddingTop: StatusBar.currentHeight, backgroundColor:ThemeColor.dark.Background }}>
         <Text>Select Your profile Pls: </Text>
         <View style={styles.usersSelect}>
           {
@@ -320,12 +270,11 @@ const History = () => {
     );
   }
 
-  return (
-    <SafeAreaView style={{ paddingTop: StatusBar.currentHeight }}>
-      <ScrollView>
 
-      <Text>{inputValue}</Text>
-      </ScrollView>
+  return (
+<SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,flex:1  }}>
+<StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background} />
+
       {isUpdateAvailable && (
         <Modal
           animationType="slide"
@@ -342,7 +291,7 @@ const History = () => {
 
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: "100%" }}>
                 <TouchableOpacity
-                  style={{ flexBasis: "45%", backgroundColor: "#3133", padding: 10, borderRadius: 15 }}
+                  style={{ flexBasis: "45%", backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, padding: 10, borderRadius: 15 }}
                   onPress={async () => {
                     try {
                       const update = await Updates.checkForUpdateAsync();
@@ -363,7 +312,7 @@ const History = () => {
                   >Update</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={{ flexBasis: "45%", backgroundColor: "#3133", padding: 10, borderRadius: 15 }}
+                  style={{ flexBasis: "45%", backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, padding: 10, borderRadius: 15 }}
 
                   onPress={handleCloseModal}>
                   <Text
@@ -381,8 +330,8 @@ const History = () => {
       <DropDownList
           Data={monthNames}
           label="month"
-          styleLabel={{color:"red"}}
-          styletextInput={{color:"red"}}
+          styleLabel={{color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text}}
+          styletextInput={{color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary}}
           onchange={(value) => setMonth(value)
           }
           selectedVal={month}
@@ -394,13 +343,17 @@ const History = () => {
         DebtAmount={Calculate?.Debts}
         ExpenseAmount={Calculate?.Expense}
       />
-      <Text>Montly Expense By Grouped By Category: </Text>
+      <Text style={{
+        fontWeight:"800",
+        textAlign:'center',
+        color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary
+      }}>Montly Expense By Category : </Text>
       {
         expGrouped.length != 0 && (
           expGrouped.map(item => {
             return (
               <View key={item.date + "" + item.exp} style={{ flexDirection: "row", justifyContent: 'space-between', padding: 5 }}>
-                <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{item.date}</Text>
+                <Text style={{ fontSize: 15, fontWeight: 'bold',color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text}}>{item.date}</Text>
 
                 <Text style={{ color: "red" }}>: -{item.exp} MAD</Text>
               </View>
@@ -443,7 +396,7 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 40,
-    borderColor: 'gray',
+    borderColor: "#333",
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 10,

@@ -1,8 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, View, Text, TextInput, FlatList, Button, Alert, KeyboardAvoidingView } from 'react-native';
+import { View, StyleSheet, Text, TextInput, FlatList, Button, Alert, KeyboardAvoidingView, useColorScheme } from 'react-native';
 
-import { Timestamp, addDoc, collection, doc, getDocs, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
+import {  doc,  setDoc } from 'firebase/firestore';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { str } from '../Interfaces/Storage';
@@ -12,22 +12,20 @@ import { users } from '../Interfaces/Users';
 import Checkbox from '../Components/Checkbox';
 import { db } from '../Interfaces/Firebase';
 import Toast from '../Components/Toast';
-
-
+import { ThemeColor } from '../Interfaces/Themed';
 
 export default function ModalScreen() {
+  const colorScheme = useColorScheme();
+
 
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [Name, SetName] = useState<string>('');
   const [PayedBy, SetPayedBy] = useState<string>('');
   const [selectedCat, setSelectedCat] = useState<string>("");
   const [Price, SetPrice] = useState<string>("");
-
-
   //const [Price, SetPrice]: any = useState(0);
   const [Rechable, setRechable] = useState<boolean>(false); // Default to true to handle initial state
   const [done, setDone] = useState<boolean>(false); // Default to true to handle initial state
-
   const [isConnected, setIsConnected] = useState<boolean>(false); // Default to true to handle initial state
   const [items, setItems] = useState<Participants[]>(users);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -48,28 +46,17 @@ export default function ModalScreen() {
 
   });
 
-
   useEffect(() => {
-
     const unsubscribe = NetInfo.addEventListener((state: any) => {
       setIsConnected(state.isConnected)
       setRechable(state.isInternetReachable)
-      // console.log(state.isConnected)
-
     });
-
     loadExpenses();
-
     return () => {
-
       unsubscribe();
     };
   }, []);
   str.getData("user", setSelectedUser);
-
-
-  //str.getData("user", setSelectedUser);
-
 
   const handleCheckboxChange = (id: number) => {
     const updatedItems = items.map(item =>
@@ -107,6 +94,34 @@ export default function ModalScreen() {
       //console.error("Error saving expenses locally:", error);
     }
   };
+  const styles = StyleSheet.create({
+    label: {
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
+      fontSize: 16,
+      textAlign: "left",
+      fontWeight: "bold",
+      marginLeft: 10,
+    },
+    textInput: {
+      height: 40, borderColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, borderWidth: 1, marginBottom: 20, padding: 10,
+      color:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+      backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+    },
+    container: {
+      flex: 1,
+      padding: 15,
+      backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: 'bold',
+    },
+    separator: {
+      marginVertical: 30,
+      height: 1,
+      width: '80%',
+    },
+  });
 
 
   return (
@@ -185,7 +200,6 @@ export default function ModalScreen() {
           }
 
           if (!exp.amount) {
-            //await str.removeValue('LocalExpense')
 
             Alert.alert('Error', 'Amount Is Required.');
             return;
@@ -216,15 +230,13 @@ export default function ModalScreen() {
             exp.sync = !exp.sync;
             await setDoc(doc(db, 'users', exp.transaction), exp);
             Alert.alert('Data Add On Server.', 'With Success');
-            //setDone(true);
 
           } else {
             // Add expense locally
-            //setExpenses([...expenses, exp]);
+            
             expenses.push(exp)
             setDoc(doc(db, 'users', exp.transaction), exp);
-            //console.log(exp)
-            //console.log("Expenses ",expenses)
+          
             await saveExpensesLocally();
             Alert.alert('Data Add On Local.', 'With Success');
           }
@@ -250,92 +262,15 @@ export default function ModalScreen() {
             createdAt: currentDate
 
           });
-          //console.log('New data added successfully', expenses);
 
         } catch (error) {
-          //  console.error('Error adding new data:', error);
+           console.error('Error adding new data:', error);
         }
 
-        //console.log(expenses)
-
-        //newDocumentData.participants.push();
-
       }} />
-      {/* <Button onPress={async () => {
-        // Assuming you have a reference to your Firestore collection
-        const collectionRef = collection(db, 'users');
-
-        // Fetch documents from the collection
-        getDocs(collectionRef)
-          .then((querySnapshot) => {
-            querySnapshot.forEach(async (doc) => {
-              try {
-                const data = doc.data();
-                // Check if the document already has a createdAt field
-                if (!data.createdAt) {
-                  // Combine dateExp and timeExp into a JavaScript Date object
-                  const dateParts = data.dateExp.split('/');
-                  const timeParts = data.timeExp.split(':');
-                  const combinedDateTime = new Date(
-                    parseInt(dateParts[2]), // year
-                    parseInt(dateParts[0]) - 1, // month (0-indexed)
-                    parseInt(dateParts[1]), // day
-                    parseInt(timeParts[0]), // hours
-                    parseInt(timeParts[1]), // minutes
-                    parseInt(timeParts[2]) // seconds
-                  );
-
-                  // Convert combinedDateTime to a Firestore Timestamp object
-                  const createdAt = Timestamp.fromDate(combinedDateTime);
-
-                  // Update the document with the new createdAt field
-                  await updateDoc(doc.ref, { createdAt });
-                  console.log("Document updated with createdAt field:", doc.id);
-                } else {
-                  console.log("Document already has createdAt field:", doc.id);
-                }
-              } catch (error) {
-                console.error("Error updating document:", error);
-              }
-            });
-          })
-          .catch((error) => {
-            console.error("Error getting documents: ", error);
-          });
-
-        // await setDoc(doc(db, 'tester',""+new Date().getTime() ), {
-        //   createAt:serverTimestamp(),
-        //   createpm:new Date(),
-
-        // });
-
-      }} title='Test' /> */}
+      
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  label: {
-    color: "black",
-    fontSize: 16,
-    textAlign: "left",
-    fontWeight: "bold",
-    marginLeft: 10,
-  },
-  textInput: {
-    height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 20, padding: 10
-  },
-  container: {
-    flex: 1,
-    padding: 15
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
+

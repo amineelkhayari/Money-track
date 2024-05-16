@@ -1,4 +1,4 @@
-import { View, Text, Button, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
+import { View, Text, Button, StyleSheet, FlatList, TouchableOpacity, useColorScheme } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { collection, getDocs, onSnapshot, orderBy, query, where,serverTimestamp, Timestamp } from 'firebase/firestore';
 
@@ -7,9 +7,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { str } from '../Interfaces/Storage';
 import { coupage } from '../Interfaces/Method';
 import { db } from '../Interfaces/Firebase';
+import ListArray from '../Components/lists';
+import { ThemeColor } from '../Interfaces/Themed';
 
 
 const Expenses = () => {
+  const colorScheme = useColorScheme();
+
 
   const [exp, setExpenses] = useState<GetExpense[]>([]);
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
@@ -223,110 +227,73 @@ const Expenses = () => {
       alignItems: 'center',
     }}><Text>Loading...</Text></View>;
   }
+  const styles = StyleSheet.create({
+    div: {
+      height: 1, // Adjust height as needed
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, // Adjust color as needed
+      marginVertical: 10, // Adjust vertical spacing as needed
+    },
+    divider: {
+      height: 3, // Adjust height as needed
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, // Adjust color as needed
+      marginVertical: 10, // Adjust vertical spacing as needed
+    },
+    container: {
+      flex: 1,
+    },
+    group: {
+      marginBottom: 20,
+      paddingHorizontal: 20,
+    },
+    date: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+    },
+    transaction: {
+      padding: 15,
+      backgroundColor: 
+      ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+      borderRadius: 8,
+      marginBottom: 10,
+      shadowColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    description: {
+      fontSize: 16,
+      marginBottom: 5,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+    },
+    amount: {
+      fontSize: 14,
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+    }
+  });
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background}]}>
       <Text style={{ justifyContent: 'center', fontSize: 20, fontWeight: 'bold' }}>All Expenses For User : {selectUser}</Text>
-      <FlatList
+      {/* <FlatList
         data={expGrouped}
         keyExtractor={(group) => group.date}
         renderItem={renderItem}
-      />
+      /> */}
+            <ListArray Data={expGrouped} selectUser={selectUser} types='Expenses'  />
+
     </View>
-    // <View>
-    //   <Button title={"Refrech All Expens for " + selectUser} onPress={() => {
-    //     getTotalDebtForUser(selectUser)
-    //       .then((data) => {
-    //         setExpenses(data);
-    //         console.log(selectUser + 'T ' + data.length, data);
-    //       })
-    //       .catch((error) => {
-    //         console.error('Error:', error);
-    //       });
-    //   }} />
-    //   <View>
-    //     {
-    //       (exp?.length > 0 && (
-    //         exp.map((item: Expense) => {
-    //           return (
-
-    //             <TouchableOpacity
-    //               key={item.transaction}
-    //               onPress={() => {
-    //                 router.push(
-    //                   {
-    //                     pathname: '/detail/detail', params: { id: item.transaction }
-    //                   }
-    //                 )
-    //               }}>
-    //               <View style={styles.expenseItem}>
-
-    //                 <Text style={styles.description}>{item.description} Payed By ={item.paidBy}:</Text>
-    //                 <Text style={styles.amount}>${(item.amount/item.participants.length).toFixed(2)}/{item.amount.toFixed(2)}</Text>
-    //               </View>
-    //             </TouchableOpacity>
-    //           )
-    //         })
-    //       ))
-    //     }
-    //   </View>
-
-
-
-    // </View>
+  
   )
 }
 
 export default Expenses
 
 
-const styles = StyleSheet.create({
-  div: {
-    height: 1, // Adjust height as needed
-    backgroundColor: 'gray', // Adjust color as needed
-    marginVertical: 10, // Adjust vertical spacing as needed
-  },
-  divider: {
-    height: 3, // Adjust height as needed
-    backgroundColor: 'red', // Adjust color as needed
-    marginVertical: 10, // Adjust vertical spacing as needed
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  group: {
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  date: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  transaction: {
-    padding: 15,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    marginBottom: 10,
-    shadowColor: '#000',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  description: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: '#333',
-  },
-  amount: {
-    fontSize: 14,
-    color: '#666',
-  }
-});
+
