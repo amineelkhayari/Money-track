@@ -19,6 +19,9 @@ class Storage {
             // saving error
         }
     };
+    clearAll=async ()=>{
+        await AsyncStorage.clear();
+    }
     getData = async (key: string, setData?: React.Dispatch<React.SetStateAction<string>>) => {
         try {
             const value = await AsyncStorage.getItem(key);

@@ -1,6 +1,6 @@
+// All dep Import
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TextInput, FlatList, Button, Alert, KeyboardAvoidingView, useColorScheme } from 'react-native';
-
 import { doc, setDoc } from 'firebase/firestore';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,24 +12,25 @@ import Checkbox from '../Components/Checkbox';
 import { db } from '../Interfaces/Firebase';
 import Toast from '../Components/Toast';
 import { ThemeColor } from '../Interfaces/Themed';
+import { useUsername } from '../Components/userName';
 
 export default function ModalScreen() {
+  // Providers declare
+
   const colorScheme = useColorScheme();
+  const { username } = useUsername();
+  const currentDate = new Date();
 
-
-  const [selectedUser, setSelectedUser] = useState<string>('');
+  //State Declare
   const [Name, SetName] = useState<string>('');
   const [PayedBy, SetPayedBy] = useState<string>('');
   const [selectedCat, setSelectedCat] = useState<string>("");
   const [Price, SetPrice] = useState<string>("");
-  //const [Price, SetPrice]: any = useState(0);
   const [Rechable, setRechable] = useState<boolean>(false); // Default to true to handle initial state
   const [done, setDone] = useState<boolean>(false); // Default to true to handle initial state
   const [isConnected, setIsConnected] = useState<boolean>(false); // Default to true to handle initial state
   const [items, setItems] = useState<Participants[]>(users);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-
-  const currentDate = new Date();
   const [exp, setexp] = useState<Expense>({
     amount: 0.0,
     description: '',
@@ -45,6 +46,7 @@ export default function ModalScreen() {
 
   });
 
+  // delare evet effect
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state: any) => {
       setIsConnected(state.isConnected)
@@ -55,8 +57,8 @@ export default function ModalScreen() {
       unsubscribe();
     };
   }, []);
-  str.getData("user", setSelectedUser);
 
+  //Method Declare
   const handleCheckboxChange = (id: number) => {
     const updatedItems = items.map(item =>
       item.ID === id ? { ...item, checked: !item.checked } : item
@@ -93,6 +95,8 @@ export default function ModalScreen() {
       //console.error("Error saving expenses locally:", error);
     }
   };
+
+  //styles Declare
   const styles = StyleSheet.create({
     label: {
       color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
@@ -186,7 +190,7 @@ export default function ModalScreen() {
 
 
         try {
-          exp.transaction = selectedUser + "" + new Date().getTime();
+          exp.transaction = username + "" + new Date().getTime();
           let num = Number(Price).toFixed(2);
           exp.amount = Number(num);
           exp.description = Name;

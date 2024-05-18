@@ -1,41 +1,28 @@
+// All dep Import
 import { View, Text, StyleSheet, useColorScheme } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { str } from '../Interfaces/Storage';
 import { coupage } from '../Interfaces/Method';
 import { db } from '../Interfaces/Firebase';
 import ListArray from '../Components/lists';
 import { ThemeColor } from '../Interfaces/Themed';
-
+import { useUsername } from '../Components/userName';
 
 const Expenses = () => {
+  // Providers declare
   const colorScheme = useColorScheme();
-
-
+  const { username } = useUsername();
+  //State Declare
   const [exp, setExpenses] = useState<GetExpense[]>([]);
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
-
-  const [selectUser, setSelectedUser] = useState<string>('');
-
+  // delare evet effect
   useEffect(() => {
-
     const currentDate = new Date();
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    // const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
     const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-
-    // Format dates as strings
-    const startOfMonthString = startOfMonth.toLocaleDateString();
-    const endOfMonthString = endOfMonth.toLocaleDateString();
-
     const usersCollection = collection(db, 'users');
 
-
     const q = query(usersCollection,
-      // where('dateExp', '>=', startOfMonthString),
-      // where('dateExp', '<=', endOfMonthString),
       where('createdAt', '>=', startOfMonth),
       where('createdAt', '<', endOfMonth),
       orderBy('createdAt', 'desc')
@@ -43,9 +30,7 @@ const Expenses = () => {
 
     const subscribe = onSnapshot(q, {
       next: async (snapshot) => {
-        await str.getData("user", setSelectedUser);
-        var value = await AsyncStorage.getItem('user');
-        if (value == null)
+        if (username == null)
           return;
         const todos: GetExpense[] = [];
         const Todos = snapshot.docs.forEach((doc) => {
@@ -55,8 +40,8 @@ const Expenses = () => {
 
           // Calculate Mohammed's share in the expense
           const participants: Participants[] = expense.participants;
-          if (paidBy === value) {
-            if (participants.filter((item: Participants) => !item.Payed && item.Value != value).length > 0) {
+          if (paidBy === username) {
+            if (participants.filter((item: Participants) => !item.Payed && item.Value != username).length > 0) {
               todos.push({
                 id: doc.id,
                 ...doc.data()
@@ -64,14 +49,14 @@ const Expenses = () => {
 
             }
 
-            else if (participants.filter((item: Participants) => item.Value === value).length === 1) {
+            else if (participants.filter((item: Participants) => item.Value === username).length === 1) {
               todos.push({
                 id: doc.id,
                 ...doc.data()
               } as GetExpense);
             }
           } else {
-            if (participants.filter((item: Participants) => item.Value === value && item.Payed == true).length === 1
+            if (participants.filter((item: Participants) => item.Value === username && item.Payed == true).length === 1
             ) {
 
 
@@ -82,33 +67,16 @@ const Expenses = () => {
             }
 
           }
-
-
-
-          //alert(doc.metadata.fromCache)
         })
         setExpenses(todos)
-        setGrouped(coupage(todos, 'dateExp', "" + value));
+        setGrouped(coupage(todos, 'dateExp', "" + username));
       }
     });
 
     return () => subscribe();
-  }, [])
-
-
-
-
-
-
-
-  if (expGrouped.length == 0) {
-    return <View style={{
-      flex: 1,
-      justifyContent: 'center', // Vertically center content
-      alignItems: 'center',
-      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
-    }}><Text>Loading...</Text></View>;
-  }
+  }, [username])
+  //Method Declare
+  //styles Declare
   const styles = StyleSheet.create({
     div: {
       height: 1, // Adjust height as needed
@@ -160,17 +128,22 @@ const Expenses = () => {
       color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
     }
   });
+
+  if (expGrouped.length == 0) {
+    return <View style={{
+      flex: 1,
+      justifyContent: 'center', // Vertically center content
+      alignItems: 'center',
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+    }}><Text>Loading...</Text></View>;
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background }]}>
       <Text style={{
         justifyContent: 'center', fontSize: 20, fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
-      }}>All Expenses For User : {selectUser}</Text>
-      {/* <FlatList
-        data={expGrouped}
-        keyExtractor={(group) => group.date}
-        renderItem={renderItem}
-      /> */}
-      <ListArray Data={expGrouped} selectUser={selectUser} types='Expenses' />
+      }}>All Expenses For User : {username}</Text>
+      <ListArray Data={expGrouped} selectUser={username} types='Expenses' />
 
     </View>
 

@@ -1,52 +1,29 @@
-
+// All dep Import
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { collection, doc, getDocs, query, updateDoc, where, deleteDoc } from 'firebase/firestore';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert, useColorScheme } from 'react-native';
-import { str } from '../Interfaces/Storage';
 import { db } from '../Interfaces/Firebase';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeColor } from '../Interfaces/Themed';
+import { useUsername } from '../Components/userName';
 
 
 const ExpenseDetailPage = () => {
-    const colorScheme = useColorScheme();
-    const styless = StyleSheet.create({
 
-        roundButton: {
-            width: 40,
-            height: 40,
-            borderRadius: 50,
-            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
-            marginLeft: 10,
-            marginRight: 10
-        },
-        bar: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-        },
-        header: {
-            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
-            height: 100,
-            opacity: 1,
-            borderBottomWidth: StyleSheet.hairlineWidth,
-            borderColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
-        }
-    });
+    // Providers declare
+    const colorScheme = useColorScheme();
+    const { username } = useUsername();
     const params = useLocalSearchParams();
+    const navigation = useNavigation();
+
+    //State Declare
     const [exp, setExpenses] = useState<any>();
     const [docsID, setdocsID] = useState<string>('');
-    const [selectUser, setSelectedUser] = useState<string>('');
     const [participants, setParticipants] = useState<Participants[]>([]);
 
-    const navigation = useNavigation();
+    // delare evet effect
     useEffect(() => {
-        str.getData("user", setSelectedUser)
 
         getTotalDebtForUser()
             .then((data) => {
@@ -69,7 +46,7 @@ const ExpenseDetailPage = () => {
             headerRight: () => (
                 <View style={styless.bar}>
                     <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]} onPress={() => {
-                        if (exp.paidBy === selectUser)
+                        if (exp.paidBy === username)
                             Alert.alert(
                                 "Are your sure?",
                                 "To Delete this Record : " + exp?.description,
@@ -104,16 +81,13 @@ const ExpenseDetailPage = () => {
 
 
         });
-    }, [exp])
+    }, [username, exp])
 
-
-
+    //Method Declare
     const handlePay = async (participantIndex: number) => {
-
         try {
             // Get a reference to the document
             const documentRef = doc(db, 'users', docsID);
-
             const participant = exp?.participants.find((participant: Participants) => participant.Value === participants[participantIndex].Value);
             if (participant) {
                 // Update the 'Payed' status for the participant
@@ -122,18 +96,12 @@ const ExpenseDetailPage = () => {
                 Alert.alert(participant.Value, " Paid " + (exp.amount / exp.participants.length).toFixed(2) + " " + exp.paidBy);
                 setExpenses(exp)
 
-                // console.log('Participant payed status updated successfully');
-            } else {
-                // console.log('Participant not found');
             }
-
-
         } catch (error) {
             // console.error('Error updating participant payed status:', error);
         }
 
     };
-
     async function getTotalDebtForUser() {
         const transaction = params.id;
         if (params.id === undefined || params.id == null || params.id == "")
@@ -160,22 +128,38 @@ const ExpenseDetailPage = () => {
             setdocsID(docsID);
             return expense;
         } else {
-            //console.log("No expense found for transaction ID:", transaction);
             useNavigation().goBack();
         }
     }
 
-    if (!exp) {
-        return <View style={{
-            paddingTop: StatusBar.currentHeight,
-            flex: 1,
-            justifyContent: 'center', // Vertically center content
+    //styles Declare
+    const styless = StyleSheet.create({
+
+        roundButton: {
+            width: 40,
+            height: 40,
+            borderRadius: 50,
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
             alignItems: 'center',
-            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
-
-        }}><Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Loading...</Text></View>;
-    }
-
+            justifyContent: 'center',
+            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+            marginLeft: 10,
+            marginRight: 10
+        },
+        bar: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+        },
+        header: {
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+            height: 100,
+            opacity: 1,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+        }
+    });
     const styles = StyleSheet.create({
 
         container: {
@@ -200,6 +184,7 @@ const ExpenseDetailPage = () => {
             fontSize: 20,
             fontWeight: 'bold',
             marginBottom: 10,
+            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary
         },
         text: {
             fontSize: 16,
@@ -241,6 +226,21 @@ const ExpenseDetailPage = () => {
     });
 
 
+
+
+    if (!exp) {
+        return <View style={{
+            paddingTop: StatusBar.currentHeight,
+            flex: 1,
+            justifyContent: 'center', // Vertically center content
+            alignItems: 'center',
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+
+        }}><Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Loading...</Text></View>;
+    }
+
+
+
     return (
         <View style={styles.container}>
             <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary} barStyle="light-content" />
@@ -253,7 +253,7 @@ const ExpenseDetailPage = () => {
                 <Text style={styles.text}>Date  : {exp.dateExp} At : {exp.timeExp}</Text>
                 <Text style={styles.text}>Paid By: {exp.paidBy}</Text>
                 <Text style={styles.text}>Transaction ID: {exp.transaction}</Text>
-                <Text style={styles.subHeading}>Participants:</Text>
+                <Text style={styles.heading}>Participants:</Text>
                 {participants.map((participant, index) => (
                     <View key={index} style={styles.participant}>
                         <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{participant.Value}</Text>
@@ -261,7 +261,7 @@ const ExpenseDetailPage = () => {
                             ? (
                                 <Text style={styles.paidText}>Paid : {(exp.amount / exp.participants.length).toFixed(2)} MAD</Text>
                             ) : (
-                                ((exp.paidBy == selectUser || participant.Value == selectUser) &&
+                                ((exp.paidBy == username || participant.Value == username) &&
                                     (
                                         <TouchableOpacity onPress={() => handlePay(index)} style={[styles.payButton, styles.payButtonright]}>
                                             <Text style={styles.payButtonText}>Pay {(exp.amount / participants.length).toFixed(2)}</Text>
