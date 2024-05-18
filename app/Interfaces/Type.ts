@@ -4,6 +4,7 @@ type Participants = {
     checked: boolean,
     Payed: boolean
   }
+
   type Expense = {
     amount: number,
     description: string,
@@ -28,6 +29,7 @@ type Participants = {
     paidBy: string,
     participants: Participants[]
   }
+
   type ExpenseCreadit = {
     amount: number,
     description: string,
@@ -41,6 +43,7 @@ type Participants = {
     partName: string,
     createdAt: Date
   }
+  
   interface GroupedData {
     date: string;
     data: ExpenseCreadit[];

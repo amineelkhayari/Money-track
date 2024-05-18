@@ -1,3 +1,4 @@
+//All dep Import
 import { View, Text } from 'react-native'
 import React from 'react'
 import { Picker } from '@react-native-picker/picker'
@@ -13,6 +14,11 @@ type pickerProps = {
 };
 
 export function DropDownList(props: pickerProps) {
+    // Providers declare
+    // State Declare
+    // Delare evet effect
+    // Method Declare
+    // Style declare
 
     return (
         <View>

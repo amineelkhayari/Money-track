@@ -1,3 +1,4 @@
+// All dep Import
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -10,18 +11,22 @@ import { str } from './Interfaces/Storage';
 import { Alert, StatusBar, useColorScheme } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { ThemeColor } from './Interfaces/Themed';
+import { UsernameProvider } from './Components/userName';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
+  // Providers declare
+
+  //State Declare
   const [isConnected, setIsConnected] = useState<boolean>(false); // Default to true to handle initial state
   const [Rechable, setRechable] = useState<boolean>(false); // Default to true to handle initial state
-
   const [loaded, error] = useFonts({
     am: require('../assets/fonts/SpaceMono-Regular.ttf')
   });
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+
+  // delare evet effect
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -36,9 +41,8 @@ export default function RootLayout() {
       unsubscribe();
     };
   }, []);
+
   useEffect(() => {
-
-
     const asyncData = async () => {
       var value = await AsyncStorage.getItem('LocalExpense');
       if (value != null) {
@@ -47,9 +51,9 @@ export default function RootLayout() {
         if (val.length > 0) {
           val.forEach(async (load: Expense) => {
             load.sync = !load.sync;
-           
-           
-            load.createdAt=new Date(load.createdAt);
+
+
+            load.createdAt = new Date(load.createdAt);
             if (isConnected && Rechable) await setDoc(doc(db, 'users', load.transaction), load);
             else setDoc(doc(db, 'users', load.transaction), load);
 
@@ -72,6 +76,11 @@ export default function RootLayout() {
 
   }, [loaded]);
 
+  //Method Declare
+
+
+  //styles Declare
+
   if (!loaded) {
     return null;
   }
@@ -81,37 +90,43 @@ export default function RootLayout() {
 }
 
 function Layout() {
-
-
+  // Providers declare
   const colorScheme = useColorScheme();
-  
+
+  //State Declare
+
+  //Method Declare
+
+  // delare evet effect
+
+
+  //styles Declare
 
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <UsernameProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            headerStyle: {
+              backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+            },
+            headerTintColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}
+        >
+          <Stack.Screen name="Screens/Detail" options={{
+            animation: 'fade',
+            headerShown: true,
 
-    <Stack
-
-      screenOptions={{
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
-        },
-        headerTintColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-      }}
-    >
-      <Stack.Screen name="Screens/Detail" options={{
-        animation: 'fade',
-        headerShown: true,
-
-        headerTransparent: false,
-        presentation:'card' 
-             }} />
-
-    </Stack>
+            headerTransparent: false,
+            presentation: 'card'
+          }} />
+        </Stack>
+      </UsernameProvider>
     </ThemeProvider>
 
   );

@@ -1,3 +1,4 @@
+// All dep Import
 import { View, Text, StyleSheet, useColorScheme } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
@@ -7,25 +8,26 @@ import { coupageGeneric } from '../Interfaces/Method';
 import { str } from '../Interfaces/Storage';
 import { ThemeColor } from '../Interfaces/Themed';
 import ListArray from '../Components/lists';
+import { useUsername } from '../Components/userName';
 
 const Debts = () => {
+  // Providers declare
+
   const colorScheme = useColorScheme();
+  const { username } = useUsername();
+
+  //State Declare
 
   const [exp, setExpenses] = useState<GetExpense[]>([]);
-  const [selectUser, setSelectedUser] = useState<string>('');
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
 
+  // delare evet effect
 
   useEffect(() => {
     const currentDate = new Date();
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-    // Format dates as strings
-    const startOfMonthString = startOfMonth.toLocaleDateString();
-    const endOfMonthString = endOfMonth.toLocaleDateString();
-
     const usersCollection = collection(db, 'users');
-
     const q = query(usersCollection,
       where('createdAt', '>=', startOfMonth),
       where('createdAt', '<', endOfMonth),
@@ -33,8 +35,6 @@ const Debts = () => {
     );
     const subscribe = onSnapshot(q, {
       next: async (snapshot) => {
-        await str.getData("user", setSelectedUser);
-        var value = await AsyncStorage.getItem('user');
         const todos: GetExpense[] = [];
         const ExpDebts = snapshot.docs.forEach((doc) => {
           const expense = doc.data();
@@ -42,9 +42,9 @@ const Debts = () => {
           const paidBy = expense.paidBy;
           // Calculate Mohammed's share in the expense
           const participants = expense.participants;
-          if (paidBy !== value) {
+          if (paidBy !== username) {
             participants.forEach((participant: Participants) => {
-              if (participant.Value == value && !participant.Payed) {
+              if (participant.Value == username && !participant.Payed) {
                 todos.push({
                   id: doc.id,
                   ...doc.data()
@@ -61,12 +61,12 @@ const Debts = () => {
 
       }
     })
-
-    //str.getData("user", setSelectedUser)
     return () => subscribe();
 
-  }, [])
+  }, [username]);
 
+  //Method Declare
+  //styles Declare
 
   const styles = StyleSheet.create({
     div: {
@@ -120,8 +120,6 @@ const Debts = () => {
     }
   });
 
-
-
   if (expGrouped.length == 0) {
     return <View style={{
       flex: 1,
@@ -131,16 +129,8 @@ const Debts = () => {
     }}><Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>You Don't any Debts ...</Text></View>;
   }
   return (
-
     <View style={[styles.container, { backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background }]}>
-
-      {/* <FlatList
-        data={expGrouped}
-        keyExtractor={(group) => group.date}
-        renderItem={renderItem}
-      /> */}
-      <ListArray Data={expGrouped} selectUser={selectUser} types='Debts' />
-
+      <ListArray Data={expGrouped} selectUser={username} types='Debts' />
     </View>
   )
 }

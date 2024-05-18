@@ -1,33 +1,29 @@
+// All dep Import
 import { View, Text, StyleSheet, useColorScheme } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../Interfaces/Firebase';
-import { str } from '../Interfaces/Storage';
 import { coupageGeneric } from '../Interfaces/Method';
 import ListArray from '../Components/lists';
 import { ThemeColor } from '../Interfaces/Themed';
+import { useUsername } from '../Components/userName';
 
 const Credits = () => {
+  // Providers declare
   const colorScheme = useColorScheme();
+  const { username } = useUsername();
 
-
+  //State Declare
   const [exp, setExpenses] = useState<ExpenseCreadit[]>([]);
-  const [selectUser, setSelectedUser] = useState<string>('');
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
 
-
+  // delare evet effect
   useEffect(() => {
 
     const currentDate = new Date();
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-    // Format dates as strings
-    const startOfMonthString = startOfMonth.toLocaleDateString();
-    const endOfMonthString = endOfMonth.toLocaleDateString();
-
     const usersCollection = collection(db, 'users');
-
     const q = query(usersCollection,
       where('createdAt', '>=', startOfMonth),
       where('createdAt', '<', endOfMonth),
@@ -35,45 +31,31 @@ const Credits = () => {
     )
     const subscribe = onSnapshot(q, {
       next: async (snapshot) => {
-        await str.getData("user", setSelectedUser);
-
-
-        var value = await AsyncStorage.getItem('user');
         const todos: ExpenseCreadit[] = [];
         const ExpDebts = snapshot.docs.forEach((doc) => {
           const expense = doc.data();
-          const amount = expense.amount;
           const paidBy = expense.paidBy;
           // Calculate Mohammed's share in the expense
           const participants = expense.participants;
-          if (paidBy === value) {
+          if (paidBy === username) {
             participants.forEach((participant: Participants) => {
-              if (participant.Value !== value && !participant.Payed) {
+              if (participant.Value !== username && !participant.Payed) {
                 todos.push({ partName: participant.Value, ...expense } as ExpenseCreadit);
               }
-
             });
           }
-
         });//enf foreach
         setExpenses(todos)
-        //var value = await AsyncStorage.getItem('LocalExpense');
-        // if (value != null) {
-        //   //console.log("Value ", value)
-
-        // }
         setGrouped(coupageGeneric(todos, 'partName'));
-
       }
     })
 
     return () => subscribe();
 
-  }, [])
+  }, [username])
 
-
-
-
+  //Method Declare
+  //styles Declare
   const styles = StyleSheet.create({
     div: {
       height: 1, // Adjust height as needed
@@ -100,8 +82,8 @@ const Credits = () => {
     },
     transaction: {
       padding: 15,
-      backgroundColor: 
-      ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+      backgroundColor:
+        ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
       borderRadius: 8,
       marginBottom: 10,
       shadowColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
@@ -125,27 +107,26 @@ const Credits = () => {
       color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
     }
   });
-  
 
   if (expGrouped.length == 0) {
     return <View style={{
       flex: 1,
       justifyContent: 'center', // Vertically center content
       alignItems: 'center',
-      backgroundColor:ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
-    }}><Text style={{color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text}}>No Credit...</Text></View>;
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+    }}><Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>No Credit...</Text></View>;
   }
 
   return (
 
-    <View style={[styles.container, { backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background}]}>
+    <View style={[styles.container, { backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background }]}>
 
       {/* <FlatList
         data={expGrouped}
         keyExtractor={(group) => group.date}
         renderItem={renderItem}
       /> */}
-      <ListArray Data={expGrouped} selectUser={selectUser} types='Credit'  />
+      <ListArray Data={expGrouped} selectUser={username} types='Credit' />
 
     </View>
   )

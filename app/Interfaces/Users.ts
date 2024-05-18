@@ -2,79 +2,78 @@
 export const monthNames = [
   {
     ID: 1,
-    Value: "January"
-    
+    Value: 1
+
   },
   {
     ID: 2,
-    Value: "February"
+    Value: 2
   },
   {
     ID: 3,
-    Value: "March"
+    Value: 3
   },
   {
     ID: 4,
-    Value: "April"
+    Value: 4
   },
   {
     ID: 5,
-    Value: "May"
+    Value: 5
   },
   {
     ID: 6,
-    Value: "June"
+    Value: 6
   },
   {
     ID: 7,
-    Value: "July"
+    Value: 7
   },
   {
     ID: 8,
-    Value: "August"
+    Value: 8
   },
   {
     ID: 9,
-    Value: "September"
+    Value: 9
   },
   {
     ID: 10,
-    Value: "October"
+    Value: 10
   },
   {
     ID: 11,
-    Value: "November"
+    Value: 11
   },
   {
     ID: 12,
-    Value: "December"
+    Value: 12
   },
-  
+
 ];
-export const users:Participants[]  = [
-    {
-        ID: 1,
-        Value: "Amine",
-        checked: false,
-        Payed: false
-      },
-      {
-        ID: 2,
-        Value: "Mohammed",
-        checked: false,
-        Payed: false
-      },
-      {
-        ID: 3,
-        Value: "Jounir",
-        checked: false,
-        Payed: false
-      },
-      {
-        ID: 4,
-        Value: "Harari",
-        checked: false,
-        Payed: false,
-      }
-  ];
-  
+export const users: Participants[] = [
+  {
+    ID: 1,
+    Value: "Amine",
+    checked: false,
+    Payed: false
+  },
+  {
+    ID: 2,
+    Value: "Mohammed",
+    checked: false,
+    Payed: false
+  },
+  {
+    ID: 3,
+    Value: "Jounir",
+    checked: false,
+    Payed: false
+  },
+  {
+    ID: 4,
+    Value: "Harari",
+    checked: false,
+    Payed: false,
+  }
+];

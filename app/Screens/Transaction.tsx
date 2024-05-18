@@ -1,49 +1,31 @@
+// All dep Import
 import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Platform } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState } from 'react'
 import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
 import { str } from '../Interfaces/Storage';
 import { monthNames, users } from '../Interfaces/Users';
 import Dashboard from '../Components/Dashboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { convertDate, coupageGeneric } from '../Interfaces/Method';
+import { convertDate, coupageGeneric, getFirstAndLastDayOfMonth } from '../Interfaces/Method';
 import * as Updates from 'expo-updates';
 import { DropDownList } from '../Components/Picker';
 import { ThemeColor } from '../Interfaces/Themed';
 import { useColorScheme } from 'react-native';
-import DateTimePicker, { DateTimePickerEvent, Event } from '@react-native-community/datetimepicker';
-
-
-async function onFetchUpdateAsync() {
-  try {
-    const update = await Updates.checkForUpdateAsync();
-    if (update.isAvailable) {
-      await Updates.fetchUpdateAsync();
-      await Updates.reloadAsync();
-
-    }
-  } catch (error) {
-    // You can also add an alert() here if needed for your purposes
-    console.log(`Error fetching latest Expo update: ${error}`);
-  }
-}
+import { useUsername } from '../Components/userName';
 
 const History = () => {
+  // Providers declare
   const colorScheme = useColorScheme();
+  const { setUsername, username } = useUsername();
 
-
-  const [selectedUser, setSelectedUser] = useState<string>('');
-
+  //State Declare
+  const [DataCount, setDataCount] = useState<number>(0);
   const [Calculate, setCalculate] = useState<any>();
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
-  const [inputValue, setInputValue] = useState('');
-
-  const [month, setMonth]: any = useState(new Date().toLocaleDateString('default', { month: 'numeric' }));
-  const [daySelect, SetdaySelected] = useState(new Date().getDate());
-  const [day, setDay]: any = useState(new Date(new Date().getFullYear(), month, 0).getDate())
-
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
+  const [month, setMonth]: any = useState(new Date().getMonth() + 1);
+  const [startOfm, setStartOfm] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [endOfm, setendOfm] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1));
 
 
   const {
@@ -54,35 +36,26 @@ const History = () => {
   } = Updates.useUpdates();
 
 
-
+  // delare evet effect
   useEffect(() => {
-
     // Define start and end dates for the current month
     const currentDate = new Date();
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-
     const usersCollection = collection(db, 'users');
-
     const q = query(usersCollection,
-      where('createdAt', '>=', startOfMonth),
-      where('createdAt', '<', endOfMonth),
+      where('createdAt', '>=', startOfm),
+      where('createdAt', '<', endOfm),
       orderBy('createdAt', 'desc')
     )
-
     const subscribe = onSnapshot(q, {
       next: async (snapshot) => {
-
         let totalDebt = 0;
         let totleExpense = 0;
         let totalCredit = 0;
         const todos: GetExpense[] = [];
-
-        var value = await AsyncStorage.getItem('user');
-        if (value == null)
+        var value = username;
+        if (value == null || value == '')
           return;
         const Todos = snapshot.docs.forEach((doc) => {
-
           const expense = doc.data();
           const amount = expense.amount;
           const paidBy = expense.paidBy;
@@ -94,28 +67,27 @@ const History = () => {
 
           // If Mohammed is the payer, he's owed by other participants
           // If Mohammed is not the payer, he owes the payer
-          if (paidBy === value) {
+          if (paidBy === username) {
             totleExpense += amount;
             participants.forEach((participant: Participants) => {
-              if (participant.Value === value)
+              if (participant.Value === username)
                 todos.push({
                   id: doc.id,
                   ...expense
                 } as GetExpense);
 
-              if (participant.Value !== value && !participant.Payed) {
+              if (participant.Value !== username && !participant.Payed) {
                 totalCredit += share;
               }
-              else if (participant.Value !== value && participant.Payed) {
+              else if (participant.Value !== username && participant.Payed) {
                 totleExpense -= share;
-
               }
             });
           } else {
             participants.forEach((participant: Participants) => {
-              if (participant.Value == value && !participant.Payed) {
+              if (participant.Value == username && !participant.Payed) {
                 totalDebt += share;
-              } else if (participant.Value == value && participant.Payed) {
+              } else if (participant.Value == username && participant.Payed) {
                 totleExpense += share;
                 todos.push({
                   id: doc.id,
@@ -124,12 +96,7 @@ const History = () => {
               }
 
             });
-            //console.log(doc.data())
-
-            //totalDebt += share;
           }
-
-
         });
 
         var res = {
@@ -137,38 +104,36 @@ const History = () => {
           "Credit": totalCredit.toFixed(2),
           "Debts": totalDebt.toFixed(2)
         }
-        //console.log("totale of Data",res)
         setGrouped(coupageGeneric(todos, 'cat'))
-        //console.log(expGrouped);
         setCalculate(res);
-
+        setDataCount(todos.length);
       }
     })
-    // Check if the user has already selected a user
-    const checkUserSelection = async () => {
-      try {
-        const user = await str.getData('user', setSelectedUser);
-
-
-
-      } catch (error) {
-        // console.error('Error reading user selection:', error);
-      }
-    };
-
-    checkUserSelection();
     return () => subscribe();
-
-
-  }, []);
+  }, [month, username]);
   const [modalVisible, setModalVisible] = useState(true);
 
 
-
+  //Method Declare
+  async function onFetchUpdateAsync() {
+    try {
+      const update = await Updates.checkForUpdateAsync();
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
+  
+      }
+    } catch (error) {
+      // You can also add an alert() here if needed for your purposes
+      console.log(`Error fetching latest Expo update: ${error}`);
+    }
+  }
+  
   const handleCloseModal = () => {
     setModalVisible(false);
   };
 
+  //styles Declare
   const styles = StyleSheet.create({
 
     openButton: {
@@ -233,16 +198,16 @@ const History = () => {
     },
   });
 
-  if (selectedUser == "") {
+  if (username == "" || username == undefined || username == null) {
     return (
-      <View style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background }}>
+      <View style={{ flex: 1, paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background }}>
         <Text style={styles.modalTitle}>Select Your profile Pls: </Text>
         <View style={styles.usersSelect}>
           {
             users.map((item) => {
               return <View key={item.Value}>
                 <Button title={item.Value} onPress={() => {
-                  str.storeData("user", item.Value, setSelectedUser);
+                  setUsername(item.Value);
                 }} />
 
               </View>
@@ -256,17 +221,6 @@ const History = () => {
       </View>
     );
   }
-  const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    const currentDate = selectedDate || date;
-    setShowPicker(Platform.OS === 'ios');
-    setDate(currentDate);
-    console.log(currentDate)
-  };
-
-  const showDatepicker = () => {
-    setShowPicker(true);
-  };
-  const maxDate = new Date(); // Initialize maxDate to current date
 
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background, flex: 1 }}>
@@ -323,19 +277,35 @@ const History = () => {
       )}
 
       <View>
-        <Button onPress={showDatepicker} title="Show date picker!" />
-      </View>
-      {showPicker && (
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={date}
-          mode="date"
-          is24Hour={true}
-          display="default"
-          onChange={onChange}
-          maximumDate={maxDate}
+        <Text style={{
+          color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
+        }}>
+          Data Between: {startOfm.toDateString()} To : {endOfm.toDateString()}
+        </Text>
+        <DropDownList
+          Data={monthNames}
+          label={"Month For Get Data " + DataCount}
+          styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
+          styletextInput={{
+            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+          }}
+          onchange={(value) => {
+            setMonth(value);
+            var val = parseInt(value, 10);
+            const { firstDay, lastDay } = getFirstAndLastDayOfMonth(val, 2024);
+            setStartOfm(firstDay);
+            setendOfm(lastDay);
+            console.log(firstDay, lastDay);
+          }}
+          selectedVal={month}
+          placerholder='Select Month'
         />
-      )}
+
+
+      </View>
+
+
       <Dashboard
         CreditAmount={Calculate?.Credit}
         DebtAmount={Calculate?.Debts}
