@@ -1,33 +1,25 @@
 // All dep Import
-import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Platform } from 'react-native'
-import React, { createContext, useEffect, useState } from 'react'
-import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Alert } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
-import { str } from '../Interfaces/Storage';
 import { monthNames, users } from '../Interfaces/Users';
 import Dashboard from '../Components/Dashboard';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { convertDate, coupageGeneric, getFirstAndLastDayOfMonth } from '../Interfaces/Method';
+import { convertDate, coupageGeneric } from '../Interfaces/Method';
 import * as Updates from 'expo-updates';
 import { DropDownList } from '../Components/Picker';
 import { ThemeColor } from '../Interfaces/Themed';
 import { useColorScheme } from 'react-native';
 import { useUsername } from '../Components/userName';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from '../Interfaces/userSlice';
 
 const History = () => {
   // Providers declare
   const colorScheme = useColorScheme();
-  const { setUsername, username } = useUsername();
-
-  //State Declare
-  const [DataCount, setDataCount] = useState<number>(0);
-  const [Calculate, setCalculate] = useState<any>();
-  const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
-  const [month, setMonth]: any = useState(new Date().getMonth() + 1);
-  const [startOfm, setStartOfm] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [endOfm, setendOfm] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1));
-
-
+  const { setSelectedMonth, selectedMonth, startOfm, endOfm } = useUsername();
+  const dispatch = useDispatch();
+  const user = useSelector((state: any) => state.user.user);
   const {
     currentlyRunning,
     availableUpdate,
@@ -35,11 +27,17 @@ const History = () => {
     isUpdatePending
   } = Updates.useUpdates();
 
+  //State Declare
+  const [DataCount, setDataCount] = useState<number>(0);
+  const [Calculate, setCalculate] = useState<any>();
+  const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
+
+  
 
   // delare evet effect
   useEffect(() => {
+    //console.log("all data",expenses);
     // Define start and end dates for the current month
-    const currentDate = new Date();
     const usersCollection = collection(db, 'users');
     const q = query(usersCollection,
       where('createdAt', '>=', startOfm),
@@ -52,8 +50,7 @@ const History = () => {
         let totleExpense = 0;
         let totalCredit = 0;
         const todos: GetExpense[] = [];
-        var value = username;
-        if (value == null || value == '')
+        if (user == null || user == '' || user == undefined)
           return;
         const Todos = snapshot.docs.forEach((doc) => {
           const expense = doc.data();
@@ -67,27 +64,27 @@ const History = () => {
 
           // If Mohammed is the payer, he's owed by other participants
           // If Mohammed is not the payer, he owes the payer
-          if (paidBy === username) {
+          if (paidBy === user) {
             totleExpense += amount;
             participants.forEach((participant: Participants) => {
-              if (participant.Value === username)
+              if (participant.Value === user)
                 todos.push({
                   id: doc.id,
                   ...expense
                 } as GetExpense);
 
-              if (participant.Value !== username && !participant.Payed) {
+              if (participant.Value !== user && !participant.Payed) {
                 totalCredit += share;
               }
-              else if (participant.Value !== username && participant.Payed) {
+              else if (participant.Value !== user && participant.Payed) {
                 totleExpense -= share;
               }
             });
           } else {
             participants.forEach((participant: Participants) => {
-              if (participant.Value == username && !participant.Payed) {
+              if (participant.Value == user && !participant.Payed) {
                 totalDebt += share;
-              } else if (participant.Value == username && participant.Payed) {
+              } else if (participant.Value == user && participant.Payed) {
                 totleExpense += share;
                 todos.push({
                   id: doc.id,
@@ -98,7 +95,7 @@ const History = () => {
             });
           }
         });
-
+        console.log(" in  function ");
         var res = {
           "Expense": totleExpense.toFixed(2),
           "Credit": totalCredit.toFixed(2),
@@ -110,9 +107,8 @@ const History = () => {
       }
     })
     return () => subscribe();
-  }, [month, username]);
+  }, [selectedMonth, user]);
   const [modalVisible, setModalVisible] = useState(true);
-
 
   //Method Declare
   async function onFetchUpdateAsync() {
@@ -121,14 +117,14 @@ const History = () => {
       if (update.isAvailable) {
         await Updates.fetchUpdateAsync();
         await Updates.reloadAsync();
-  
+
       }
     } catch (error) {
       // You can also add an alert() here if needed for your purposes
       console.log(`Error fetching latest Expo update: ${error}`);
     }
   }
-  
+
   const handleCloseModal = () => {
     setModalVisible(false);
   };
@@ -179,7 +175,6 @@ const History = () => {
       justifyContent: 'space-between',
       gap: 10,
       top: 10,
-
     },
     container: {
       flex: 1,
@@ -196,28 +191,45 @@ const History = () => {
       height: 1,
       width: '80%',
     },
+    cardwrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginBottom: 30,
+      marginHorizontal: 10,
+    },
+
+    card: {
+      width: '45%',
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
+      marginVertical: 10,
+      paddingVertical: 20,
+      alignItems: 'center',
+    },
   });
 
-  if (username == "" || username == undefined || username == null) {
+  if (!user) {
     return (
       <View style={{ flex: 1, paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background }}>
         <Text style={styles.modalTitle}>Select Your profile Pls: </Text>
-        <View style={styles.usersSelect}>
+        <View style={styles.cardwrap}>
           {
             users.map((item) => {
-              return <View key={item.Value}>
-                <Button title={item.Value} onPress={() => {
-                  setUsername(item.Value);
-                }} />
+              return <View style={styles.card} key={item.Value}>
 
+                <TouchableOpacity onPress={() => {
+                  //setUsername(item.Value);
+                  dispatch(setUser(item.Value));
+                }} >
+                  <Text style={styles.modalTitle}>{item.Value}</Text>
+
+                </TouchableOpacity>
               </View>
 
             })
           }
+
         </View>
-
-
-
       </View>
     );
   }
@@ -225,7 +237,6 @@ const History = () => {
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background, flex: 1 }}>
       <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background} />
-
       {isUpdateAvailable && (
         <Modal
           animationType="slide"
@@ -237,18 +248,13 @@ const History = () => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>New Update {Updates.runtimeVersion}</Text>
-              <Text style={styles.modalTitle} >Created At : {convertDate(Updates.runtimeVersion)}</Text>
-
-
+              <Text style={styles.modalTitle}>New Update {Updates.createdAt?.toDateString()}</Text>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: "100%" }}>
                 <TouchableOpacity
                   style={{ flexBasis: "45%", backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, padding: 10, borderRadius: 15 }}
                   onPress={async () => {
                     try {
-                      const update = await Updates.checkForUpdateAsync();
-                      if (update.isAvailable) {
-
-
+                      if (isUpdateAvailable) {
                         onFetchUpdateAsync();
                       }
                     } catch (err) {
@@ -277,39 +283,33 @@ const History = () => {
       )}
 
       <View>
-        <Text style={{
-          color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
-        }}>
-          Data Between: {startOfm.toDateString()} To : {endOfm.toDateString()}
-        </Text>
+        <Text style={{ fontWeight: 'bold', padding: 10, textAlign: 'center', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }} >
+          Welcome Mrs: {user}</Text>
         <DropDownList
           Data={monthNames}
-          label={"Month For Get Data " + DataCount}
+          label={"Month"}
           styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
           styletextInput={{
+
             color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
-            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
+
           }}
           onchange={(value) => {
-            setMonth(value);
             var val = parseInt(value, 10);
-            const { firstDay, lastDay } = getFirstAndLastDayOfMonth(val, 2024);
-            setStartOfm(firstDay);
-            setendOfm(lastDay);
-            console.log(firstDay, lastDay);
+            setSelectedMonth(val)
           }}
-          selectedVal={month}
-          placerholder='Select Month'
+          selectedVal={selectedMonth.toString()}
+          placerholder={'Select Month'}
         />
-
-
       </View>
-
-
       <Dashboard
         CreditAmount={Calculate?.Credit}
         DebtAmount={Calculate?.Debts}
         ExpenseAmount={Calculate?.Expense}
+        totalCount={DataCount}
+        endDate={endOfm}
+        startDate={startOfm}
       />
       <Text style={{
         fontWeight: "800",

@@ -14,7 +14,7 @@ const Debts = () => {
   // Providers declare
 
   const colorScheme = useColorScheme();
-  const { username } = useUsername();
+  const { username, selectedMonth, endOfm, startOfm } = useUsername();
 
   //State Declare
 
@@ -24,13 +24,10 @@ const Debts = () => {
   // delare evet effect
 
   useEffect(() => {
-    const currentDate = new Date();
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     const usersCollection = collection(db, 'users');
     const q = query(usersCollection,
-      where('createdAt', '>=', startOfMonth),
-      where('createdAt', '<', endOfMonth),
+      where('createdAt', '>=', startOfm),
+      where('createdAt', '<', endOfm),
       orderBy('createdAt', 'desc')
     );
     const subscribe = onSnapshot(q, {
@@ -63,7 +60,7 @@ const Debts = () => {
     })
     return () => subscribe();
 
-  }, [username]);
+  }, [username, selectedMonth])
 
   //Method Declare
   //styles Declare

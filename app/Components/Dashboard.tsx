@@ -4,13 +4,15 @@ import React from 'react'
 import { Feather } from '@expo/vector-icons'
 
 type DashProps = {
-  ExpenseAmount: number, CreditAmount: number, DebtAmount: number
+  ExpenseAmount: number, CreditAmount: number, DebtAmount: number, totalCount?: number
+  startDate: Date, endDate: Date
 };
 
 const Dashboard = (props: DashProps) => {
   // Providers declare
   const { ExpenseAmount, CreditAmount, DebtAmount
   } = props;
+
   // State Declare
   // Delare evet effect
   // Method Declare
@@ -58,12 +60,28 @@ const Dashboard = (props: DashProps) => {
   return (
     <View>
       <View style={styles.card}>
-        <View style={styles.cardBottom}>
+        <View style={[styles.cardBottom, {
+          flexDirection: 'column'
+        }]}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 5 }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>From</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{props.startDate.toDateString()}</Text>
+
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 5 }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>To</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{props.endDate.toDateString()}</Text>
+
+          </View>
         </View>
         <View style={styles.cardTop}>
 
           <Text style={{ textAlign: 'center', color: 'aliceblue', flexDirection: "row", justifyContent: "space-between" }}>
-            Total Expense
+            Total Expense {props.totalCount !== undefined && (
+              <>
+                ({props.totalCount})
+              </>
+            )}
 
           </Text>
           <Text style={{ fontSize: 20, textAlign: 'center', color: 'aliceblue' }}>

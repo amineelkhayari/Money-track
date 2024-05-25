@@ -1,6 +1,7 @@
 // All dep Import
 import React, { useEffect, useRef } from 'react';
-import { Animated, Text, StyleSheet, View } from 'react-native';
+import { Animated, Text, StyleSheet, View, useColorScheme } from 'react-native';
+import { ThemeColor } from '../Interfaces/Themed';
 
 interface ToastProps {
   message: string;
@@ -9,6 +10,7 @@ interface ToastProps {
 
 const Toast: React.FC<ToastProps> = ({ message, showToast }) => {
   // Providers declare
+  const colorScheme = useColorScheme();
 
   //State Declare
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -50,14 +52,14 @@ const Toast: React.FC<ToastProps> = ({ message, showToast }) => {
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
       borderRadius: 8,
       padding: 10,
       marginHorizontal: 20,
       marginBottom: 20,
     },
     message: {
-      color: '#fff',
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text ,
     },
   });
 

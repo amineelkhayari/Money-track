@@ -1,9 +1,13 @@
-//All dep Import
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, useColorScheme } from 'react-native'
-import React from 'react'
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, useColorScheme } from 'react-native';
+import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { ThemeColor } from '../Interfaces/Themed';
 import { convertDate } from '../Interfaces/Method';
+import { Ionicons, Fontisto } from '@expo/vector-icons';
+import { deleteExpense } from '../Interfaces/expenseSlice';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../Interfaces/Firebase';
+import { useDispatch } from 'react-redux';
 
 type pickerProps = {
   Data: any[],
@@ -11,37 +15,33 @@ type pickerProps = {
   selectUser: string
 };
 
-
 const ListArray = (props: pickerProps) => {
-  // Providers declare
   const colorScheme = useColorScheme();
-  // State Declare
-  // Delare evet effect
-  // Method Declare
+  const [selectTransaction, setSelectTransaction] = useState<string[]>([]);
+  const dispatch = useDispatch();
+
+  const handleLongPress = (transactionId: string) => {
+    setSelectTransaction(prev => {
+      if (prev.includes(transactionId)) {
+        return prev.filter(id => id !== transactionId);
+      } else {
+        return [...prev, transactionId];
+      }
+    });
+  };
+
   const renderItem = ({ item }: { item: GroupedData }) => (
     <View style={styles.group}>
       <View style={{ alignItems: 'center', backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }}>
         <Text style={[styles.date, { alignItems: 'baseline' }]}>
-
           {props.types != 'Expenses' ? item.date.toString() : convertDate(item.date.toString())}
-
         </Text>
         <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>
-
-          {
-            (props.types != 'Expenses' ? (
-              <>
-                Total Of {props.types} :  {item?.exp}
-              </>
-            ) :
-              <>
-                Exp: {item?.exp?.Expense} | Credit: {item?.exp?.Credit} | Debts: {item?.exp?.Debts}
-
-              </>
-            )
-
-          }
-
+          {props.types != 'Expenses' ? (
+            <>Total Of {props.types} :  {item?.exp}</>
+          ) : (
+            <>Exp: {item?.exp?.Expense} | Credit: {item?.exp?.Credit} | Debts: {item?.exp?.Debts}</>
+          )}
         </Text>
       </View>
       <FlatList
@@ -50,50 +50,62 @@ const ListArray = (props: pickerProps) => {
         renderItem={({ item: transaction }) => (
           <>
             <TouchableOpacity
+              onLongPress={() => handleLongPress(transaction.transaction)}
               key={transaction.transaction}
               onPress={() => {
-                router.push(
-                  {
-                    pathname: 'Screens/Detail', params: { id: transaction.transaction }
-                  }
-                )
+                router.push({
+                  pathname: 'Screens/Detail', params: { id: transaction.transaction }
+                });
               }}>
-              <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}> + Payed By: {transaction.paidBy}</Text>
 
+              <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                //backgroundColor: selectTransaction.includes(transaction.transaction) ? 'green' : 'red'
+              }}>
+                {
+                  selectTransaction.includes(transaction.transaction) && (
+                    <Fontisto name={'checkbox-active'} size={24} color={selectTransaction.includes(transaction.transaction) ? ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary : ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary} />
+
+                  )
+                }
+
+                <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}>
+                  + Payed By: {transaction.paidBy}
+                </Text>
+                <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}>
+                  + At: {transaction.dateExp}
+                </Text>
+              </View>
               <View style={[styles.transaction, { backgroundColor: transaction.paidBy === props.selectUser ? ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary : ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }]}>
                 <View>
-                  <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{transaction.description} type : {transaction.cat}</Text>
+                  <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{transaction.description} type: {transaction.cat}</Text>
                   <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>At: {transaction.timeExp}</Text>
                 </View>
                 <View>
                   <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Parts: {transaction.participants.length}</Text>
                   <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Amount: {(transaction.amount / transaction.participants.length).toFixed(2)}/ {transaction.amount}</Text>
                 </View>
-
               </View>
-
             </TouchableOpacity>
             <View style={styles.div} />
-
           </>
-
         )}
       />
       <View style={styles.divider} />
-
     </View>
   );
-  // Style declare
+
   const styles = StyleSheet.create({
     div: {
-      height: 1, // Adjust height as needed
-      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, // Adjust color as needed
-      marginVertical: 10, // Adjust vertical spacing as needed
+      height: 1,
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+      marginVertical: 10,
     },
     divider: {
-      height: 3, // Adjust height as needed
-      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, // Adjust color as needed
-      marginVertical: 10, // Adjust vertical spacing as needed
+      height: 3,
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
+      marginVertical: 10,
     },
     container: {
       flex: 1,
@@ -111,8 +123,7 @@ const ListArray = (props: pickerProps) => {
     },
     transaction: {
       padding: 15,
-      backgroundColor:
-        ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
       borderRadius: 8,
       marginBottom: 10,
       shadowColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
@@ -138,22 +149,66 @@ const ListArray = (props: pickerProps) => {
   });
 
   if (props.Data.length == 0) {
-    return <View style={{
-      flex: 1,
-      justifyContent: 'center', // Vertically center content
-      alignItems: 'center',
-    }}><Text>No {props.types}...</Text></View>;
+    return (
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <Text>No {props.types}...</Text>
+      </View>
+    );
   }
+
   return (
-    <FlatList
-      data={props.Data}
-      keyExtractor={(group) => group.date}
-      renderItem={renderItem}
-    />
-  )
+    <View>
+      <FlatList
+        data={props.Data}
+        keyExtractor={(group) => group.date}
+        renderItem={renderItem}
+      />
+      {selectTransaction.length > 0 && (
+        <View style={{
+          position: 'absolute',
+          top: 5,
+          right: 5,
+          padding: 10,
+        }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'red', padding: 10, borderRadius: 10
+
+            }}
+            onPress={() => {
+              if (selectTransaction.length > 0) {
+                selectTransaction.map(async (item) => {
+                  dispatch(deleteExpense(item));
+                  await deleteDoc(doc(db, "users", item));
+                });
+                setSelectTransaction([]);
+              }
+            }}
+          >
+            <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: 'black', padding: 10, borderRadius: 10
+
+            }}
+            onPress={() => {
+              setSelectTransaction([]);
+
+            }}
+          >
+            <Ionicons name="restaurant-outline" size={22} color={'white'} />
+
+
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
 }
 
-export default ListArray
-
-
-
+export default ListArray;

@@ -11,33 +11,28 @@ import { useUsername } from '../Components/userName';
 const Expenses = () => {
   // Providers declare
   const colorScheme = useColorScheme();
-  const { username } = useUsername();
+  const { username, selectedMonth, endOfm, startOfm } = useUsername();
   //State Declare
   const [exp, setExpenses] = useState<GetExpense[]>([]);
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
+
   // delare evet effect
   useEffect(() => {
-    const currentDate = new Date();
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     const usersCollection = collection(db, 'users');
-
     const q = query(usersCollection,
-      where('createdAt', '>=', startOfMonth),
-      where('createdAt', '<', endOfMonth),
+      where('createdAt', '>=', startOfm),
+      where('createdAt', '<', endOfm),
       orderBy('createdAt', 'desc')
     )
-
     const subscribe = onSnapshot(q, {
       next: async (snapshot) => {
-        if (username == null)
+        if (username == null || username == "")
           return;
         const todos: GetExpense[] = [];
         const Todos = snapshot.docs.forEach((doc) => {
           const expense: Expense = doc.data() as Expense;
           const amount = expense.amount;
           const paidBy = expense.paidBy;
-
           // Calculate Mohammed's share in the expense
           const participants: Participants[] = expense.participants;
           if (paidBy === username) {
@@ -56,16 +51,12 @@ const Expenses = () => {
               } as GetExpense);
             }
           } else {
-            if (participants.filter((item: Participants) => item.Value === username && item.Payed == true).length === 1
-            ) {
-
-
+            if (participants.filter((item: Participants) => item.Value === username && item.Payed == true).length === 1) {
               todos.push({
                 id: doc.id,
                 ...doc.data()
               } as GetExpense);
             }
-
           }
         })
         setExpenses(todos)
@@ -74,7 +65,7 @@ const Expenses = () => {
     });
 
     return () => subscribe();
-  }, [username])
+  }, [username, selectedMonth])
   //Method Declare
   //styles Declare
   const styles = StyleSheet.create({

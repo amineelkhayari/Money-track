@@ -10,7 +10,7 @@ type pickerProps = {
     styletextInput?: {},
     selectedVal: string,
     onchange: (value: string) => void; // Modify the onchange function to receive the selected value
-    placerholder: string
+    placerholder: string,
 };
 
 export function DropDownList(props: pickerProps) {
