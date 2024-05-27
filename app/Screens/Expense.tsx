@@ -2,16 +2,19 @@
 import { View, Text, StyleSheet, useColorScheme } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
-import { coupage } from '../Interfaces/Method';
+import { coupage, coupageGeneric } from '../Interfaces/Method';
 import { db } from '../Interfaces/Firebase';
 import ListArray from '../Components/lists';
 import { ThemeColor } from '../Interfaces/Themed';
 import { useUsername } from '../Components/userName';
+import { useSelector } from 'react-redux';
 
 const Expenses = () => {
   // Providers declare
   const colorScheme = useColorScheme();
   const { username, selectedMonth, endOfm, startOfm } = useUsername();
+  const params = useSelector((state: any) => state.params);
+
   //State Declare
   const [exp, setExpenses] = useState<GetExpense[]>([]);
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
@@ -59,13 +62,15 @@ const Expenses = () => {
             }
           }
         })
-        setExpenses(todos)
-        setGrouped(coupage(todos, 'dateExp', "" + username));
+        setExpenses(todos);
+        //setGrouped(coupage(todos, 'cat', "" + username));
+
+        setGrouped(coupage(todos, params.filterBy, "" + username));
       }
     });
 
     return () => subscribe();
-  }, [username, selectedMonth])
+  }, [params])
   //Method Declare
   //styles Declare
   const styles = StyleSheet.create({

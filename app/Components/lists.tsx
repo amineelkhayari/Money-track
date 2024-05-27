@@ -19,6 +19,14 @@ const ListArray = (props: pickerProps) => {
   const colorScheme = useColorScheme();
   const [selectTransaction, setSelectTransaction] = useState<string[]>([]);
   const dispatch = useDispatch();
+  const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
+
+  const toggleGroup = (date: string) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [date]: !prev[date]
+    }));
+  };
 
   const handleLongPress = (transactionId: string) => {
     setSelectTransaction(prev => {
@@ -32,69 +40,80 @@ const ListArray = (props: pickerProps) => {
 
   const renderItem = ({ item }: { item: GroupedData }) => (
     <View style={styles.group}>
-      <View style={{ alignItems: 'center', backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }}>
+      <TouchableOpacity onPress={() => toggleGroup(item.date)} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={[styles.date, { alignItems: 'baseline' }]}>
-          {props.types != 'Expenses' ? item.date.toString() : convertDate(item.date.toString())}
+          {props.types != 'Expenses' ? item.date.toString() : convertDate(item.date.toString())} ({item.data.length}) : {props.types == 'Expenses' ? item?.exp?.Expense: item?.exp}
         </Text>
-        <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>
-          {props.types != 'Expenses' ? (
-            <>Total Of {props.types} :  {item?.exp}</>
-          ) : (
-            <>Exp: {item?.exp?.Expense} | Credit: {item?.exp?.Credit} | Debts: {item?.exp?.Debts}</>
-          )}
-        </Text>
-      </View>
-      <FlatList
-        data={item.data}
-        keyExtractor={(transaction) => transaction.transaction}
-        renderItem={({ item: transaction }) => (
-          <>
-            <TouchableOpacity
-              onLongPress={() => handleLongPress(transaction.transaction)}
-              key={transaction.transaction}
-              onPress={() => {
-                router.push({
-                  pathname: 'Screens/Detail', params: { id: transaction.transaction }
-                });
-              }}>
+        
+        
+        <Ionicons name={expandedGroups[item.date] ? 'chevron-up' : 'chevron-down'} size={24} color={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary} />
+      </TouchableOpacity>
+      {expandedGroups[item.date] && (
+        <View>
+          <View style={{ alignItems: 'center', backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }}>
+            <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>
+              {props.types != 'Expenses' ? (
+                <>Total Of {props.types} :  {item?.exp}</>
+              ) : (
+                <>Exp: {item?.exp?.Expense} | Credit: {item?.exp?.Credit} | Debts: {item?.exp?.Debts}</>
+              )}
+            </Text>
+          </View>
+          <FlatList
+            data={item.data}
+            keyExtractor={(transaction) => transaction.transaction}
+            renderItem={({ item: transaction }) => (
+              <>
+                <TouchableOpacity
+                  onLongPress={() => handleLongPress(transaction.transaction)}
+                  key={transaction.transaction}
+                  onPress={() => {
+                    router.push({
+                      pathname: 'Screens/Detail', params: { id: transaction.transaction }
+                    });
+                  }}>
 
-              <View style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                //backgroundColor: selectTransaction.includes(transaction.transaction) ? 'green' : 'red'
-              }}>
-                {
-                  selectTransaction.includes(transaction.transaction) && (
-                    <Fontisto name={'checkbox-active'} size={24} color={selectTransaction.includes(transaction.transaction) ? ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary : ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary} />
+                  <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    //backgroundColor: selectTransaction.includes(transaction.transaction) ? 'green' : 'red'
+                  }}>
+                    {
+                      selectTransaction.includes(transaction.transaction) && (
+                        <Fontisto name={'checkbox-active'} size={24} color={selectTransaction.includes(transaction.transaction) ? ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary : ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary} />
+                      )
+                    }
 
-                  )
-                }
-
-                <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}>
-                  + Payed By: {transaction.paidBy}
-                </Text>
-                <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}>
-                  + At: {transaction.dateExp}
-                </Text>
-              </View>
-              <View style={[styles.transaction, { backgroundColor: transaction.paidBy === props.selectUser ? ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary : ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }]}>
-                <View>
-                  <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{transaction.description} type: {transaction.cat}</Text>
-                  <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>At: {transaction.timeExp}</Text>
-                </View>
-                <View>
-                  <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Parts: {transaction.participants.length}</Text>
-                  <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Amount: {(transaction.amount / transaction.participants.length).toFixed(2)}/ {transaction.amount}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-            <View style={styles.div} />
-          </>
-        )}
-      />
+                    <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}>
+                      + Payed By: {transaction.paidBy}
+                    </Text>
+                    <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}>
+                      + At: {transaction.dateExp}
+                    </Text>
+                  </View>
+                  <View style={[styles.transaction, { backgroundColor: transaction.paidBy === props.selectUser ? ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary : ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }]}>
+                    <View>
+                      <Text style={{ fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{transaction.description} type: {transaction.cat}</Text>
+                      <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>At: {transaction.timeExp}</Text>
+                    </View>
+                    <View>
+                      <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Parts: {transaction.participants.length}</Text>
+                      <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>Amount: {(transaction.amount / transaction.participants.length).toFixed(2)}/ {transaction.amount}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <View style={styles.div} />
+              </>
+            )}
+          />
+        </View>
+      )}
       <View style={styles.divider} />
     </View>
   );
+
+  // Rest of your component...
+
 
   const styles = StyleSheet.create({
     div: {

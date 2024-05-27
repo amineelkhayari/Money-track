@@ -2,6 +2,7 @@
 export const coupage = (data: any[], groupeBy: string, userId: string) => {
   const uniqueDates = [...new Set(data.map(item => item[groupeBy]))];
   // Prepare data for FlatList
+  console.log("");
   const groupedData = uniqueDates.map(date => ({
     date,
     data: data.filter(item => item[groupeBy] === date),
@@ -67,21 +68,22 @@ const CalculateExpense = (data: Expense[], userId: string) => {
     "Credit": totalCredit.toFixed(2),
     "Debts": totalDebt.toFixed(2)
   }
-
   // console.log(date,res)
-
-
   return res;
-
 }
 
 export const convertDate = (newdt: any) => {
   var parts = newdt.split("/"); // Split the string into parts
-  // Format the date as "YYYY-MM-DD"
-  var formattedDate = parts[2] + "-" + parts[0].padStart(2, '0') + "-" + parts[1].padStart(2, '0');
-  // Create a new Date object from the formatted date string
-  var dateObject = new Date(formattedDate);
-  return dateObject.toDateString(); //new Date(""+newdt).toDateString();
+  if (parts.length !== 3 || parts.some(isNaN)) {
+    return newdt;
+}else{
+// Format the date as "YYYY-MM-DD"
+var formattedDate = parts[2] + "-" + parts[0].padStart(2, '0') + "-" + parts[1].padStart(2, '0');
+// Create a new Date object from the formatted date string
+var dateObject = new Date(formattedDate);
+return dateObject.toDateString(); //new Date(""+newdt).toDateString();
+}
+  
 }
 
 export const getFirstAndLastDayOfMonth = (month:number, year:number) => {

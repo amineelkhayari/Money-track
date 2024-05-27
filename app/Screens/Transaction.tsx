@@ -1,5 +1,5 @@
 // All dep Import
-import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Alert, Switch } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
@@ -13,13 +13,15 @@ import { useColorScheme } from 'react-native';
 import { useUsername } from '../Components/userName';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../Interfaces/userSlice';
-
+import { setUserName, setDark, setFilterBy } from '../reducer/paramsSlice';
+import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
 const History = () => {
   // Providers declare
   const colorScheme = useColorScheme();
   const { setSelectedMonth, selectedMonth, startOfm, endOfm } = useUsername();
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.user.user);
+  const params = useSelector((state: any) => state.params);
   const {
     currentlyRunning,
     availableUpdate,
@@ -31,8 +33,12 @@ const History = () => {
   const [DataCount, setDataCount] = useState<number>(0);
   const [Calculate, setCalculate] = useState<any>();
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
+  const [modalVisible, setModalVisible] = useState(true);
+  const [paramsVisible, setParamsVisible] = useState(false);
 
-  
+  const toggleModal = () => {
+    setParamsVisible(!paramsVisible);
+  };
 
   // delare evet effect
   useEffect(() => {
@@ -108,7 +114,6 @@ const History = () => {
     })
     return () => subscribe();
   }, [selectedMonth, user]);
-  const [modalVisible, setModalVisible] = useState(true);
 
   //Method Declare
   async function onFetchUpdateAsync() {
@@ -126,11 +131,34 @@ const History = () => {
   }
 
   const handleCloseModal = () => {
-    setModalVisible(false);
+    setModalVisible(!paramsVisible);
   };
 
   //styles Declare
   const styles = StyleSheet.create({
+    topBar: {
+      height: 50,
+      justifyContent: 'center',
+      alignItems: 'flex-end',
+      paddingHorizontal: 10,
+      right: 15,
+    },
+    iconButton: {
+      padding: 10,
+    },
+    modal: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+
+    },
+
+    title: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 20,
+    },
 
     openButton: {
       fontSize: 16,
@@ -138,17 +166,15 @@ const History = () => {
       textDecorationLine: 'underline',
     },
     modalContainer: {
-      flex: 1,
+
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
     },
     modalContent: {
       backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
-      padding: 20,
-      borderRadius: 10,
-      alignItems: 'center',
-      width: '90%',
+
+
     },
     modalTitle: {
       fontSize: 18,
@@ -166,9 +192,11 @@ const History = () => {
       paddingLeft: 10,
     },
     closeButton: {
-      marginTop: 10,
-      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
-      textDecorationLine: 'underline',
+
+      backgroundColor: '#2196F3',
+      borderRadius: 20,
+      padding: 10,
+
     },
     usersSelect: {
       flexDirection: "row",
@@ -182,10 +210,7 @@ const History = () => {
       justifyContent: 'space-between', // Distribute space between buttons
       padding: 10,
     },
-    title: {
-      fontSize: 20,
-      fontWeight: 'bold',
-    },
+
     separator: {
       marginVertical: 30,
       height: 1,
@@ -206,6 +231,42 @@ const History = () => {
       paddingVertical: 20,
       alignItems: 'center',
     },
+
+    textStyle: {
+      color: 'white',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    overlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      height: '90%'
+    },
+    modalView: {
+      backgroundColor: 'white',
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      padding: 35,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+    buttonContainer: {
+      position: 'absolute',
+      bottom: 15,
+      width: '100%',
+      alignItems: 'center',
+    },
+
   });
 
   if (!user) {
@@ -237,6 +298,12 @@ const History = () => {
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background, flex: 1 }}>
       <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background} />
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={toggleModal} style={styles.iconButton}>
+          <FontAwesome6 name="filter-circle-dollar" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+
       {isUpdateAvailable && (
         <Modal
           animationType="slide"
@@ -285,23 +352,6 @@ const History = () => {
       <View>
         <Text style={{ fontWeight: 'bold', padding: 10, textAlign: 'center', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }} >
           Welcome Mrs: {user}</Text>
-        <DropDownList
-          Data={monthNames}
-          label={"Month"}
-          styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
-          styletextInput={{
-
-            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
-            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
-
-          }}
-          onchange={(value) => {
-            var val = parseInt(value, 10);
-            setSelectedMonth(val)
-          }}
-          selectedVal={selectedMonth.toString()}
-          placerholder={'Select Month'}
-        />
       </View>
       <Dashboard
         CreditAmount={Calculate?.Credit}
@@ -329,6 +379,76 @@ const History = () => {
           })
         )
       }
+      {/* <Button title='load' onPress={() => {
+       // dispatch(setFilterBy("dateExp"));
+        console.log(params.filterBy);
+        //setParamsVisible(!paramsVisible)
+      }} /> */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={paramsVisible}
+        onRequestClose={toggleModal}
+      >
+        <View style={[styles.overlay]} >
+          <View style={[styles.modalView, {
+            height: "80%",
+            width: '100%',
+            backgroundColor: "#333"
+          }]}>
+
+            <DropDownList
+              Data={monthNames}
+              label={"Month"}
+              styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
+              styletextInput={{
+                width: '100%',
+                color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+                backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
+              }}
+              onchange={(value) => {
+                var val = parseInt(value, 10);
+                setSelectedMonth(val)
+              }}
+              selectedVal={selectedMonth.toString()}
+              placerholder={'Select Month'}
+            />
+            <DropDownList
+              Data={[{ ID: 1, Value: "dateExp" }, { ID: 2, Value: "cat" }, { ID: 3, Value: "paidBy" }]}
+              label={"Filter By"}
+              styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
+              styletextInput={{
+                width: '100%',
+                color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+                backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
+              }}
+              onchange={(value) => {
+                dispatch(setFilterBy(value))
+              }}
+              selectedVal={params.filterBy}
+              placerholder={'Select Filter By'}
+            />
+             <Switch
+        trackColor={{ false: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, true: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}
+        thumbColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary}
+        ios_backgroundColor="#3e3e3e"
+        onValueChange={()=>{
+          dispatch(setDark(!params.dark));
+        }}
+        value={params.dark}
+      />
+            <Text style={styles.modalText}>Hello, I am a bottom modal!</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={toggleModal}
+              >
+                <Ionicons name="close-circle" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
     </SafeAreaView>
   )
