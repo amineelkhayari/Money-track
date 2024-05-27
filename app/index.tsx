@@ -89,7 +89,6 @@ export default function Home() {
 
     <TabView
       style={{ paddingTop: StatusBar.currentHeight }}
-
       navigationState={{ index, routes }}
       renderScene={renderScene}
       onIndexChange={setIndex}
@@ -97,14 +96,12 @@ export default function Home() {
       renderTabBar={props =>
         <TabBar
           indicatorStyle={{ borderBottomColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, borderBottomWidth: 2 }} // Customize the border color and width
-
           {...props}
           renderIcon={
             props => getTabBarIcon(props)
           }
           labelStyle={styles.noLabel}
           style={styles.tabBar}
-
         />
       }
       tabBarPosition={'bottom'}

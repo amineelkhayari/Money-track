@@ -11,7 +11,7 @@ import { useUsername } from '../Components/userName';
 const Credits = () => {
   // Providers declare
   const colorScheme = useColorScheme();
-  const { username } = useUsername();
+  const { username, selectedMonth, endOfm, startOfm } = useUsername();
 
   //State Declare
   const [exp, setExpenses] = useState<ExpenseCreadit[]>([]);
@@ -20,13 +20,10 @@ const Credits = () => {
   // delare evet effect
   useEffect(() => {
 
-    const currentDate = new Date();
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     const usersCollection = collection(db, 'users');
     const q = query(usersCollection,
-      where('createdAt', '>=', startOfMonth),
-      where('createdAt', '<', endOfMonth),
+      where('createdAt', '>=', startOfm),
+      where('createdAt', '<', endOfm),
       orderBy('createdAt', 'desc')
     )
     const subscribe = onSnapshot(q, {
@@ -52,7 +49,7 @@ const Credits = () => {
 
     return () => subscribe();
 
-  }, [username])
+  }, [username, selectedMonth])
 
   //Method Declare
   //styles Declare

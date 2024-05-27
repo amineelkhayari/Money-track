@@ -1,33 +1,27 @@
 // All dep Import
-import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Platform } from 'react-native'
-import React, { createContext, useEffect, useState } from 'react'
-import { collection, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Alert, Switch } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
-import { str } from '../Interfaces/Storage';
 import { monthNames, users } from '../Interfaces/Users';
 import Dashboard from '../Components/Dashboard';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { convertDate, coupageGeneric, getFirstAndLastDayOfMonth } from '../Interfaces/Method';
+import { convertDate, coupageGeneric } from '../Interfaces/Method';
 import * as Updates from 'expo-updates';
 import { DropDownList } from '../Components/Picker';
 import { ThemeColor } from '../Interfaces/Themed';
 import { useColorScheme } from 'react-native';
 import { useUsername } from '../Components/userName';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from '../Interfaces/userSlice';
+import { setUserName, setDark, setFilterBy } from '../reducer/paramsSlice';
+import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
 const History = () => {
   // Providers declare
   const colorScheme = useColorScheme();
-  const { setUsername, username } = useUsername();
-
-  //State Declare
-  const [DataCount, setDataCount] = useState<number>(0);
-  const [Calculate, setCalculate] = useState<any>();
-  const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
-  const [month, setMonth]: any = useState(new Date().getMonth() + 1);
-  const [startOfm, setStartOfm] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [endOfm, setendOfm] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1));
-
-
+  const { setSelectedMonth, selectedMonth, startOfm, endOfm } = useUsername();
+  const dispatch = useDispatch();
+  const user = useSelector((state: any) => state.user.user);
+  const params = useSelector((state: any) => state.params);
   const {
     currentlyRunning,
     availableUpdate,
@@ -35,11 +29,21 @@ const History = () => {
     isUpdatePending
   } = Updates.useUpdates();
 
+  //State Declare
+  const [DataCount, setDataCount] = useState<number>(0);
+  const [Calculate, setCalculate] = useState<any>();
+  const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
+  const [modalVisible, setModalVisible] = useState(true);
+  const [paramsVisible, setParamsVisible] = useState(false);
+
+  const toggleModal = () => {
+    setParamsVisible(!paramsVisible);
+  };
 
   // delare evet effect
   useEffect(() => {
+    //console.log("all data",expenses);
     // Define start and end dates for the current month
-    const currentDate = new Date();
     const usersCollection = collection(db, 'users');
     const q = query(usersCollection,
       where('createdAt', '>=', startOfm),
@@ -52,8 +56,7 @@ const History = () => {
         let totleExpense = 0;
         let totalCredit = 0;
         const todos: GetExpense[] = [];
-        var value = username;
-        if (value == null || value == '')
+        if (user == null || user == '' || user == undefined)
           return;
         const Todos = snapshot.docs.forEach((doc) => {
           const expense = doc.data();
@@ -67,27 +70,27 @@ const History = () => {
 
           // If Mohammed is the payer, he's owed by other participants
           // If Mohammed is not the payer, he owes the payer
-          if (paidBy === username) {
+          if (paidBy === user) {
             totleExpense += amount;
             participants.forEach((participant: Participants) => {
-              if (participant.Value === username)
+              if (participant.Value === user)
                 todos.push({
                   id: doc.id,
                   ...expense
                 } as GetExpense);
 
-              if (participant.Value !== username && !participant.Payed) {
+              if (participant.Value !== user && !participant.Payed) {
                 totalCredit += share;
               }
-              else if (participant.Value !== username && participant.Payed) {
+              else if (participant.Value !== user && participant.Payed) {
                 totleExpense -= share;
               }
             });
           } else {
             participants.forEach((participant: Participants) => {
-              if (participant.Value == username && !participant.Payed) {
+              if (participant.Value == user && !participant.Payed) {
                 totalDebt += share;
-              } else if (participant.Value == username && participant.Payed) {
+              } else if (participant.Value == user && participant.Payed) {
                 totleExpense += share;
                 todos.push({
                   id: doc.id,
@@ -98,7 +101,7 @@ const History = () => {
             });
           }
         });
-
+        console.log(" in  function ");
         var res = {
           "Expense": totleExpense.toFixed(2),
           "Credit": totalCredit.toFixed(2),
@@ -110,9 +113,7 @@ const History = () => {
       }
     })
     return () => subscribe();
-  }, [month, username]);
-  const [modalVisible, setModalVisible] = useState(true);
-
+  }, [selectedMonth, user]);
 
   //Method Declare
   async function onFetchUpdateAsync() {
@@ -121,20 +122,43 @@ const History = () => {
       if (update.isAvailable) {
         await Updates.fetchUpdateAsync();
         await Updates.reloadAsync();
-  
+
       }
     } catch (error) {
       // You can also add an alert() here if needed for your purposes
       console.log(`Error fetching latest Expo update: ${error}`);
     }
   }
-  
+
   const handleCloseModal = () => {
-    setModalVisible(false);
+    setModalVisible(!paramsVisible);
   };
 
   //styles Declare
   const styles = StyleSheet.create({
+    topBar: {
+      height: 50,
+      justifyContent: 'center',
+      alignItems: 'flex-end',
+      paddingHorizontal: 10,
+      right: 15,
+    },
+    iconButton: {
+      padding: 10,
+    },
+    modal: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+
+    },
+
+    title: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 20,
+    },
 
     openButton: {
       fontSize: 16,
@@ -142,17 +166,15 @@ const History = () => {
       textDecorationLine: 'underline',
     },
     modalContainer: {
-      flex: 1,
+
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
     },
     modalContent: {
       backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
-      padding: 20,
-      borderRadius: 10,
-      alignItems: 'center',
-      width: '90%',
+
+
     },
     modalTitle: {
       fontSize: 18,
@@ -170,16 +192,17 @@ const History = () => {
       paddingLeft: 10,
     },
     closeButton: {
-      marginTop: 10,
-      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
-      textDecorationLine: 'underline',
+
+      backgroundColor: '#2196F3',
+      borderRadius: 20,
+      padding: 10,
+
     },
     usersSelect: {
       flexDirection: "row",
       justifyContent: 'space-between',
       gap: 10,
       top: 10,
-
     },
     container: {
       flex: 1,
@@ -187,37 +210,87 @@ const History = () => {
       justifyContent: 'space-between', // Distribute space between buttons
       padding: 10,
     },
-    title: {
-      fontSize: 20,
-      fontWeight: 'bold',
-    },
+
     separator: {
       marginVertical: 30,
       height: 1,
       width: '80%',
     },
+    cardwrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginBottom: 30,
+      marginHorizontal: 10,
+    },
+
+    card: {
+      width: '45%',
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
+      marginVertical: 10,
+      paddingVertical: 20,
+      alignItems: 'center',
+    },
+
+    textStyle: {
+      color: 'white',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    overlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      height: '90%'
+    },
+    modalView: {
+      backgroundColor: 'white',
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      padding: 35,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+    buttonContainer: {
+      position: 'absolute',
+      bottom: 15,
+      width: '100%',
+      alignItems: 'center',
+    },
+
   });
 
-  if (username == "" || username == undefined || username == null) {
+  if (!user) {
     return (
       <View style={{ flex: 1, paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background }}>
         <Text style={styles.modalTitle}>Select Your profile Pls: </Text>
-        <View style={styles.usersSelect}>
+        <View style={styles.cardwrap}>
           {
             users.map((item) => {
-              return <View key={item.Value}>
-                <Button title={item.Value} onPress={() => {
-                  setUsername(item.Value);
-                }} />
+              return <View style={styles.card} key={item.Value}>
 
+                <TouchableOpacity onPress={() => {
+                  //setUsername(item.Value);
+                  dispatch(setUser(item.Value));
+                }} >
+                  <Text style={styles.modalTitle}>{item.Value}</Text>
+
+                </TouchableOpacity>
               </View>
 
             })
           }
+
         </View>
-
-
-
       </View>
     );
   }
@@ -225,6 +298,11 @@ const History = () => {
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background, flex: 1 }}>
       <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background} />
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={toggleModal} style={styles.iconButton}>
+          <FontAwesome6 name="filter-circle-dollar" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
 
       {isUpdateAvailable && (
         <Modal
@@ -237,18 +315,13 @@ const History = () => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>New Update {Updates.runtimeVersion}</Text>
-              <Text style={styles.modalTitle} >Created At : {convertDate(Updates.runtimeVersion)}</Text>
-
-
+              <Text style={styles.modalTitle}>New Update {Updates.createdAt?.toDateString()}</Text>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: "100%" }}>
                 <TouchableOpacity
                   style={{ flexBasis: "45%", backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, padding: 10, borderRadius: 15 }}
                   onPress={async () => {
                     try {
-                      const update = await Updates.checkForUpdateAsync();
-                      if (update.isAvailable) {
-
-
+                      if (isUpdateAvailable) {
                         onFetchUpdateAsync();
                       }
                     } catch (err) {
@@ -277,39 +350,16 @@ const History = () => {
       )}
 
       <View>
-        <Text style={{
-          color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text
-        }}>
-          Data Between: {startOfm.toDateString()} To : {endOfm.toDateString()}
-        </Text>
-        <DropDownList
-          Data={monthNames}
-          label={"Month For Get Data " + DataCount}
-          styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
-          styletextInput={{
-            color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
-            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background
-          }}
-          onchange={(value) => {
-            setMonth(value);
-            var val = parseInt(value, 10);
-            const { firstDay, lastDay } = getFirstAndLastDayOfMonth(val, 2024);
-            setStartOfm(firstDay);
-            setendOfm(lastDay);
-            console.log(firstDay, lastDay);
-          }}
-          selectedVal={month}
-          placerholder='Select Month'
-        />
-
-
+        <Text style={{ fontWeight: 'bold', padding: 10, textAlign: 'center', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }} >
+          Welcome Mrs: {user}</Text>
       </View>
-
-
       <Dashboard
         CreditAmount={Calculate?.Credit}
         DebtAmount={Calculate?.Debts}
         ExpenseAmount={Calculate?.Expense}
+        totalCount={DataCount}
+        endDate={endOfm}
+        startDate={startOfm}
       />
       <Text style={{
         fontWeight: "800",
@@ -329,6 +379,76 @@ const History = () => {
           })
         )
       }
+      {/* <Button title='load' onPress={() => {
+       // dispatch(setFilterBy("dateExp"));
+        console.log(params.filterBy);
+        //setParamsVisible(!paramsVisible)
+      }} /> */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={paramsVisible}
+        onRequestClose={toggleModal}
+      >
+        <View style={[styles.overlay]} >
+          <View style={[styles.modalView, {
+            height: "80%",
+            width: '100%',
+            backgroundColor: "#333"
+          }]}>
+
+            <DropDownList
+              Data={monthNames}
+              label={"Month"}
+              styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
+              styletextInput={{
+                width: '100%',
+                color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+                backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
+              }}
+              onchange={(value) => {
+                var val = parseInt(value, 10);
+                setSelectedMonth(val)
+              }}
+              selectedVal={selectedMonth.toString()}
+              placerholder={'Select Month'}
+            />
+            <DropDownList
+              Data={[{ ID: 1, Value: "dateExp" }, { ID: 2, Value: "cat" }, { ID: 3, Value: "paidBy" }]}
+              label={"Filter By"}
+              styleLabel={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}
+              styletextInput={{
+                width: '100%',
+                color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
+                backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
+              }}
+              onchange={(value) => {
+                dispatch(setFilterBy(value))
+              }}
+              selectedVal={params.filterBy}
+              placerholder={'Select Filter By'}
+            />
+             <Switch
+        trackColor={{ false: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, true: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}
+        thumbColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary}
+        ios_backgroundColor="#3e3e3e"
+        onValueChange={()=>{
+          dispatch(setDark(!params.dark));
+        }}
+        value={params.dark}
+      />
+            <Text style={styles.modalText}>Hello, I am a bottom modal!</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={toggleModal}
+              >
+                <Ionicons name="close-circle" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
     </SafeAreaView>
   )
