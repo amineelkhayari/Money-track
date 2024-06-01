@@ -16,16 +16,21 @@ export const coupage = (data: any[], groupeBy: string, userId: string) => {
 
 export const coupageGeneric = (data: any[], groupeBy: string) => {
   const uniqueDates = [...new Set(data.map(item => item[groupeBy]))];
+  var group = 0;
   // Prepare data for FlatList
   const groupedData = uniqueDates.map(date => {
     var dt = data.filter(item => item[groupeBy] === date);
-    var group = dt.map(item => (item.amount / item.participants.length)).reduce((acc, curr) => acc + curr, 0);
+    if (date === "Withdraw" || date === "Deposit")
+      group = dt.map(item => item.amount).reduce((acc, curr) => acc + curr, 0);
+
+    else
+      group = dt.map(item => (item.amount / item.participants.length)).reduce((acc, curr) => acc + curr, 0);
     return {
       date,
       data: dt,
       exp: group.toFixed(2)
     }
-  }); 
+  });
   return groupedData;
 }
 
@@ -76,17 +81,17 @@ export const convertDate = (newdt: any) => {
   var parts = newdt.split("/"); // Split the string into parts
   if (parts.length !== 3 || parts.some(isNaN)) {
     return newdt;
-}else{
-// Format the date as "YYYY-MM-DD"
-var formattedDate = parts[2] + "-" + parts[0].padStart(2, '0') + "-" + parts[1].padStart(2, '0');
-// Create a new Date object from the formatted date string
-var dateObject = new Date(formattedDate);
-return dateObject.toDateString(); //new Date(""+newdt).toDateString();
-}
-  
+  } else {
+    // Format the date as "YYYY-MM-DD"
+    var formattedDate = parts[2] + "-" + parts[0].padStart(2, '0') + "-" + parts[1].padStart(2, '0');
+    // Create a new Date object from the formatted date string
+    var dateObject = new Date(formattedDate);
+    return dateObject.toDateString(); //new Date(""+newdt).toDateString();
+  }
+
 }
 
-export const getFirstAndLastDayOfMonth = (month:number, year:number) => {
+export const getFirstAndLastDayOfMonth = (month: number, year: number) => {
   const firstDay = new Date(year, month - 1, 1);
   const lastDay = new Date(year, month, 1);
   return { firstDay, lastDay };

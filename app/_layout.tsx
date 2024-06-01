@@ -2,7 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { Timestamp, addDoc, collection, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { db } from './Interfaces/Firebase';
 import { useFonts } from 'expo-font';
@@ -15,7 +15,7 @@ import { UsernameProvider } from './Components/userName';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from './Interfaces/Store';
-import { resetExpenses, updateExpense } from './Interfaces/expenseSlice';
+import { updateExpense } from './Interfaces/expenseSlice';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -106,13 +106,12 @@ function Layout() {
   const [Rechable, setRechable] = useState<boolean>(false); // Default to true to handle initial state
 
   // delare evet effect
- 
+
   useEffect(() => {
-    
-    NetInfo.fetch().then(state=>{
-      //console.log(state)
-      if(state.isConnected && state.isInternetReachable){
-        if (expenses != null && expenses.length > 0 ){
+
+    NetInfo.fetch().then(state => {
+      if (state.isConnected && state.isInternetReachable) {
+        if (expenses != null && expenses.length > 0) {
 
           expenses.map(async (exp: Expense) => {
             if (!exp.sync) {
@@ -125,21 +124,20 @@ function Layout() {
         }
 
 
-      }else{
+      } else {
         if (expenses != null && expenses.length > 0) {
           expenses.map((exp: Expense) => {
-  
-           // dispatch(updateExpense(exp);
+
+            // dispatch(updateExpense(exp);
             setDoc(doc(db, 'users', exp.transaction), { ...exp, createdAt: new Date(exp.createdAt) } as Expense);
             dispatch(updateExpense(exp));
-  
+
           });
-          // console.log(expenses)
         }
 
       }
     }); // end nwt info
-   
+
   }, []);
   //Method Declare
 

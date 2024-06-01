@@ -25,6 +25,7 @@ const Expenses = () => {
     const q = query(usersCollection,
       where('createdAt', '>=', startOfm),
       where('createdAt', '<', endOfm),
+      //where('cat','!=','Deposit'),
       orderBy('createdAt', 'desc')
     )
     const subscribe = onSnapshot(q, {
@@ -70,7 +71,7 @@ const Expenses = () => {
     });
 
     return () => subscribe();
-  }, [params])
+  }, [params,selectedMonth])
   //Method Declare
   //styles Declare
   const styles = StyleSheet.create({

@@ -68,9 +68,12 @@ const ExpenseDetailPage = () => {
                                     {
                                         text: "Yes",
                                         onPress: async () => {
+                                            const state = await NetInfo.fetch();
+                                            if(state.isConnected && state.isInternetReachable){
+                                                await deleteDoc(doc(db, "users", exp?.transaction));
+                                            }else deleteDoc(doc(db, "users", exp?.transaction));
                                             dispatch(deleteExpense(exp.transaction));
-                                            console.log(expenses);
-                                            await deleteDoc(doc(db, "users", exp?.transaction));
+
                                             router.back();
                                             //useNavigation().goBack();
 

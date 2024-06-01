@@ -27,7 +27,10 @@ const paramsSlice = createSlice({
   reducers: {
     setUserName: (state, action: PayloadAction<string>) => {
       state.userName = action.payload;
-      
+    },
+    setSelectMonth:(state, action: PayloadAction<string>)=>{
+      state.selectMonth = action.payload;
+
     },
     setFilterBy: (state, action: PayloadAction<string>) => {
       state.filterBy = action.payload;
@@ -43,5 +46,5 @@ const paramsSlice = createSlice({
   },
 });
 
-export const { setUserName, clearUser,setFilterBy, setDark  } = paramsSlice.actions;
+export const {setUserName, clearUser,setFilterBy, setDark, setSelectMonth} = paramsSlice.actions;
 export default paramsSlice.reducer;

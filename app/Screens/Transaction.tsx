@@ -5,7 +5,7 @@ import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestor
 import { db } from '../Interfaces/Firebase';
 import { monthNames, users } from '../Interfaces/Users';
 import Dashboard from '../Components/Dashboard';
-import { convertDate, coupageGeneric } from '../Interfaces/Method';
+import {  coupageGeneric } from '../Interfaces/Method';
 import * as Updates from 'expo-updates';
 import { DropDownList } from '../Components/Picker';
 import { ThemeColor } from '../Interfaces/Themed';
@@ -13,7 +13,7 @@ import { useColorScheme } from 'react-native';
 import { useUsername } from '../Components/userName';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../Interfaces/userSlice';
-import { setUserName, setDark, setFilterBy } from '../reducer/paramsSlice';
+import {  setDark, setFilterBy } from '../reducer/paramsSlice';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
 const History = () => {
   // Providers declare
@@ -101,7 +101,6 @@ const History = () => {
             });
           }
         });
-        console.log(" in  function ");
         var res = {
           "Expense": totleExpense.toFixed(2),
           "Credit": totalCredit.toFixed(2),
@@ -153,13 +152,11 @@ const History = () => {
       backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
 
     },
-
     title: {
       fontSize: 20,
       fontWeight: 'bold',
       marginBottom: 20,
     },
-
     openButton: {
       fontSize: 16,
       color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
@@ -173,8 +170,6 @@ const History = () => {
     },
     modalContent: {
       backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
-
-
     },
     modalTitle: {
       fontSize: 18,
@@ -192,9 +187,8 @@ const History = () => {
       paddingLeft: 10,
     },
     closeButton: {
-
-      backgroundColor: '#2196F3',
-      borderRadius: 20,
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
+      borderRadius: 10,
       padding: 10,
 
     },
@@ -233,7 +227,7 @@ const History = () => {
     },
 
     textStyle: {
-      color: 'white',
+      color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
       fontWeight: 'bold',
       textAlign: 'center',
     },
@@ -243,11 +237,11 @@ const History = () => {
       height: '90%'
     },
     modalView: {
-      backgroundColor: 'white',
+      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
       padding: 35,
-      shadowColor: '#000',
+      shadowColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
       shadowOffset: {
         width: 0,
         height: 2,
@@ -298,12 +292,6 @@ const History = () => {
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background, flex: 1 }}>
       <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background} />
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={toggleModal} style={styles.iconButton}>
-          <FontAwesome6 name="filter-circle-dollar" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-
       {isUpdateAvailable && (
         <Modal
           animationType="slide"
@@ -349,9 +337,12 @@ const History = () => {
         </Modal>
       )}
 
-      <View>
-        <Text style={{ fontWeight: 'bold', padding: 10, textAlign: 'center', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }} >
+      <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
+        <Text style={{ fontWeight: 'bold', padding: 10, color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }} >
           Welcome Mrs: {user}</Text>
+        <TouchableOpacity onPress={toggleModal} style={styles.iconButton}>
+          <FontAwesome6 name="filter-circle-dollar" size={24} color={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text} />
+        </TouchableOpacity>
       </View>
       <Dashboard
         CreditAmount={Calculate?.Credit}
@@ -394,7 +385,7 @@ const History = () => {
           <View style={[styles.modalView, {
             height: "80%",
             width: '100%',
-            backgroundColor: "#333"
+            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary
           }]}>
 
             <DropDownList
@@ -409,6 +400,7 @@ const History = () => {
               onchange={(value) => {
                 var val = parseInt(value, 10);
                 setSelectedMonth(val)
+
               }}
               selectedVal={selectedMonth.toString()}
               placerholder={'Select Month'}
@@ -428,22 +420,26 @@ const History = () => {
               selectedVal={params.filterBy}
               placerholder={'Select Filter By'}
             />
-             <Switch
-        trackColor={{ false: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, true: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}
-        thumbColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary}
-        ios_backgroundColor="#3e3e3e"
-        onValueChange={()=>{
-          dispatch(setDark(!params.dark));
-        }}
-        value={params.dark}
-      />
+            <Switch
+              trackColor={{ false: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary, true: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary }}
+              thumbColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary}
+              ios_backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary}
+              onValueChange={() => {
+                dispatch(setDark(!params.dark));
+              }}
+              value={params.dark}
+            />
             <Text style={styles.modalText}>Hello, I am a bottom modal!</Text>
-            <View style={styles.buttonContainer}>
+            <View style={[styles.buttonContainer, {
+              width: '100%',
+              alignSelf: 'center',
+
+            }]}>
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={toggleModal}
               >
-                <Ionicons name="close-circle" size={24} color="white" />
+                <Ionicons name="close-circle" size={24} color={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text} />
               </TouchableOpacity>
             </View>
           </View>

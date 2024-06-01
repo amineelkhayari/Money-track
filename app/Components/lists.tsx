@@ -42,10 +42,8 @@ const ListArray = (props: pickerProps) => {
     <View style={styles.group}>
       <TouchableOpacity onPress={() => toggleGroup(item.date)} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Text style={[styles.date, { alignItems: 'baseline' }]}>
-          {props.types != 'Expenses' ? item.date.toString() : convertDate(item.date.toString())} ({item.data.length}) : {props.types == 'Expenses' ? item?.exp?.Expense: item?.exp}
+          {props.types != 'Expenses' ? item.date.toString() : convertDate(item.date.toString())} ({item.data.length}) : {props.types == 'Expenses' ? item?.exp?.Expense : item?.exp}
         </Text>
-        
-        
         <Ionicons name={expandedGroups[item.date] ? 'chevron-up' : 'chevron-down'} size={24} color={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary} />
       </TouchableOpacity>
       {expandedGroups[item.date] && (
@@ -72,7 +70,6 @@ const ListArray = (props: pickerProps) => {
                       pathname: 'Screens/Detail', params: { id: transaction.transaction }
                     });
                   }}>
-
                   <View style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
