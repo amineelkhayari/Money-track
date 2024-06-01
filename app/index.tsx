@@ -1,17 +1,14 @@
-
 // All dep Import
 import * as React from 'react';
-import { StatusBar, useWindowDimensions, StyleSheet, ImageBackground, Image, useColorScheme } from 'react-native';
+import { StatusBar, useWindowDimensions, StyleSheet, useColorScheme } from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
-import ModalScreen from './Screens/Form';
+import FormAdd from './Screens/Form';
 import History from './Screens/Transaction';
 import Expenses from './Screens/Expense';
 import Credits from './Screens/Credit';
 import Debts from './Screens/Debts';
 import { Ionicons } from '@expo/vector-icons';
-import { UsernameProvider } from './Components/userName';
 import { ThemeColor } from './Interfaces/Themed';
-
 
 
 export default function Home() {
@@ -34,7 +31,7 @@ export default function Home() {
   //Method Declare
   const renderScene = SceneMap({
     history: History,
-    ajout: ModalScreen,
+    ajout: FormAdd,
     expense: Expenses,
     credit: Credits,
     debt: Debts

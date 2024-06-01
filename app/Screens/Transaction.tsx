@@ -5,7 +5,7 @@ import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestor
 import { db } from '../Interfaces/Firebase';
 import { monthNames, users } from '../Interfaces/Users';
 import Dashboard from '../Components/Dashboard';
-import { convertDate, coupageGeneric } from '../Interfaces/Method';
+import {  coupageGeneric } from '../Interfaces/Method';
 import * as Updates from 'expo-updates';
 import { DropDownList } from '../Components/Picker';
 import { ThemeColor } from '../Interfaces/Themed';
@@ -13,7 +13,7 @@ import { useColorScheme } from 'react-native';
 import { useUsername } from '../Components/userName';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../Interfaces/userSlice';
-import { setUserName, setDark, setFilterBy } from '../reducer/paramsSlice';
+import {  setDark, setFilterBy } from '../reducer/paramsSlice';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
 const History = () => {
   // Providers declare
@@ -292,8 +292,6 @@ const History = () => {
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background, flex: 1 }}>
       <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background} />
-
-
       {isUpdateAvailable && (
         <Modal
           animationType="slide"
@@ -402,7 +400,7 @@ const History = () => {
               onchange={(value) => {
                 var val = parseInt(value, 10);
                 setSelectedMonth(val)
-                
+
               }}
               selectedVal={selectedMonth.toString()}
               placerholder={'Select Month'}

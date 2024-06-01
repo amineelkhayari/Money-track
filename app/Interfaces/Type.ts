@@ -48,6 +48,21 @@ type Participants = {
     date: string;
     data: ExpenseCreadit[];
     exp?: any
-  
+  }
+  interface Bank {
+    amount: number,
+    motif: string  | null,
+    cat: string | null,
+    dateExp:string | null,
+    timeExp:string | null ,
+    transaction: string | null,
+    user: string | null,
+    sync:boolean | true,
+    createdAt: Date 
+  }
+  interface groupeBank {
+    date: string;
+    data: Bank[];
+    exp?: any
   }
   

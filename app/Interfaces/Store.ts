@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import userReducer from './userSlice';
 import expenseReducer from './expenseSlice';
 import paramsReducer from '../reducer/paramsSlice';
+import banksReducer from '../reducer/banksSlice';
 
 
 const persistConfig = {
@@ -14,7 +15,8 @@ const persistConfig = {
 const rootReducer = combineReducers({
   user: userReducer,
   expense: expenseReducer,
-  params:paramsReducer
+  params:paramsReducer,
+  banks:banksReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
