@@ -38,37 +38,9 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    const asyncData = async () => {
-      var value = await AsyncStorage.getItem('LocalExpense');
-      if (value != null) {
-        let val: Expense[] = JSON.parse(value);
-
-        if (val.length > 0) {
-          val.forEach(async (load: Expense) => {
-            load.sync = !load.sync;
-
-
-            load.createdAt = new Date(load.createdAt);
-            if (isConnected && Rechable) await setDoc(doc(db, 'users', load.transaction), load);
-            else setDoc(doc(db, 'users', load.transaction), load);
-
-          });
-          if (isConnected && Rechable) {
-            await str.removeValue('LocalExpense')
-            Alert.alert("Data Sync", "With Success");
-          }
-
-
-        }
-      }
-
-      //
-    }
     if (loaded) {
-      // asyncData();
       SplashScreen.hideAsync();
     }
-
   }, [loaded]);
 
   //Method Declare
@@ -99,11 +71,7 @@ function Layout() {
   const expenses: Expense[] = useSelector((state: any) => state.expense.expenses);
   const dispatch = useDispatch();
 
-
-
   //State Declare
-  const [isConnected, setIsConnected] = useState<boolean>(false); // Default to true to handle initial state
-  const [Rechable, setRechable] = useState<boolean>(false); // Default to true to handle initial state
 
   // delare evet effect
 
@@ -122,8 +90,6 @@ function Layout() {
             }
           });
         }
-
-
       } else {
         if (expenses != null && expenses.length > 0) {
           expenses.map((exp: Expense) => {
@@ -134,7 +100,6 @@ function Layout() {
 
           });
         }
-
       }
     }); // end nwt info
 

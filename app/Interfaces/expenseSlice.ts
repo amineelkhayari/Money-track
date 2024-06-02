@@ -21,7 +21,6 @@ const expensesSlice = createSlice({
       console.log("set ",state.expenses);
     },// update all data
     updateExpense: (state, action: PayloadAction<Expense>) => {
-
         const index = state.expenses.findIndex(expense => expense.transaction === action.payload.transaction);
         console.log(action.payload, 'Data is set');
         if (index !== -1) {
