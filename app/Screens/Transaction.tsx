@@ -366,7 +366,7 @@ const History = () => {
               <View key={item.date + "" + item.exp} style={{ flexDirection: "row", justifyContent: 'space-between', padding: 5 }}>
                 <Text style={{ fontSize: 15, fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{item.date}</Text>
 
-                <Text style={{ color: "red" }}>: -{item.exp} MAD</Text>
+                <Text style={{ color: "red" }}>: 100 - {item.exp} = {(100  - item.exp).toFixed(2)}  MAD</Text>
               </View>
             )
           })
