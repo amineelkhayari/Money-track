@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, Text, TextInput, FlatList, TouchableOpacity, Alert, KeyboardAvoidingView, useColorScheme, useWindowDimensions, StatusBar, Modal, Button } from 'react-native';
-import { collection, doc, getDocs, onSnapshot, orderBy, query, setDoc, where } from 'firebase/firestore';
+import { View, StyleSheet, Text, TextInput, FlatList, TouchableOpacity, Alert, KeyboardAvoidingView, useColorScheme, useWindowDimensions, StatusBar, Modal, Button, TouchableWithoutFeedback } from 'react-native';
+import { collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query, setDoc, where } from 'firebase/firestore';
 import NetInfo from '@react-native-community/netinfo';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { DropDownList } from '../Components/Picker';
@@ -15,7 +15,7 @@ import { addExpense, resetExpenses } from '../Interfaces/expenseSlice';
 import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { Ionicons } from '@expo/vector-icons';
-import { addCashFlow } from '../reducer/banksSlice';
+import { addCashFlow, clearBanks, deleteRecord, updateBank } from '../reducer/banksSlice';
 import { useUsername } from '../Components/userName';
 import { convertDate, coupageGeneric } from '../Interfaces/Method';
 
@@ -306,17 +306,17 @@ function BankScreen() {
       <Text style={[themeStyles.label, {
         color: "green"
       }]}>
-        Total Deposit     : + {diff?.deposit}
+        Total Deposit     : + {diff?.deposit} MAD
       </Text>
       <Text style={[themeStyles.label, {
         color: "red"
       }]}>
-        Total Withdraw    : - {diff?.withdraw}
+        Total Withdraw    : - {diff?.withdraw} MAD
       </Text>
       <Text style={[themeStyles.label, {
         color: parseFloat(diff?.balance) >= 0 ? "green" : "red"
       }]}>
-        Total Balance     : {diff?.balance}
+        Total Balance     : {diff?.balance} MAD
       </Text>
       <FlatList
         data={expGrouped}
@@ -346,7 +346,30 @@ function BankScreen() {
                     data={item.data}
                     keyExtractor={(transaction) => transaction.amount + "" + transaction.transaction}
                     renderItem={({ item }: { item: Bank }) => (
-                      <>
+                      <TouchableOpacity
+                        onLongPress={() => {
+                          Alert.alert(
+                            "Are your sure?",
+                            "To Delete this Record : " + item?.motif,
+                            [
+                              // The "Yes" button
+                              {
+                                text: "Yes",
+                                onPress: async () => {
+                                  const state = await NetInfo.fetch();
+                                  if (state.isConnected && state.isInternetReachable) {
+                                    await deleteDoc(doc(db, "bank", item.transaction + ""));
+                                  } else deleteDoc(doc(db, "bank", item.transaction + ""));
+                                  dispatch(deleteRecord(item.transaction + ""));
+                                },
+                              },
+                              {
+                                text: "No",
+                              },
+                            ]
+                          );
+                        }}
+                      >
                         <View style={{
                           flexDirection: 'row',
                           justifyContent: 'space-between',
@@ -380,16 +403,13 @@ function BankScreen() {
                           </View>
 
                         </View>
-                      </>
+                      </TouchableOpacity>
                     )}
                   />
 
                 </View>
               )}
-
-
             </View>
-
           )
         }
       />
@@ -458,33 +478,49 @@ function BankScreen() {
                   const state = await NetInfo.fetch();
                   if (state.isConnected && state.isInternetReachable) {
                     newBankExp.sync = true;
-
                     //setMessage("New Xpenses "+exp.description+" : "+exp.amount+" Mad ");
                     await setDoc(doc(db, 'bank', newBankExp.transaction + ""), newBankExp);
-
                     Alert.alert('Data Added On Server', 'With Success');
                   } else {
-
                     setDoc(doc(db, 'bank', newBankExp.transaction + ""), newBankExp);
-
                     Alert.alert('Data Added Locally', 'With Success');
                   }
 
                   dispatch(addCashFlow(newBankExp));
                   setAmount('');
                   setBankExp({ ...initialBank, user })
-                  //console.log(newBankExp);
                 }}
               >
                 <Text style={themeStyles.buttonText}>Cash Flow</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={themeStyles.button}>
-                <Text style={themeStyles.buttonText}>Sync Data</Text>
 
-              </TouchableOpacity>
             </KeyboardAvoidingView>
+            <TouchableOpacity
+              style={themeStyles.button}
 
+              onPress={() => {
+                NetInfo.fetch().then(state => {
+                  if (banks.length > 0 || banks != null) {
+                    if (state.isConnected && state.isInternetReachable) {
+                      banks.forEach(async (item: Bank) => {
+                        if (!item.sync) {
+                          item.sync = true;
+                          await setDoc(doc(db, 'bank', item.transaction + ""), { ...item, createdAt: new Date(item.createdAt) } as Bank);
+                          dispatch(updateBank(item));
+                        }
+                      });
+                    } else {
+                      banks.forEach(async (item: Bank) => {
+                        setDoc(doc(db, 'bank', item.transaction + ""), { ...item, createdAt: new Date(item.createdAt) } as Bank);
+                      });
+                    }
+                  }
+                })
+              }}
+            >
+              <Text style={themeStyles.buttonText}>Sync Data</Text>
+
+            </TouchableOpacity>
             <View style={[styless.buttonContainer, {
               width: '100%',
               alignSelf: 'center',
@@ -498,7 +534,7 @@ function BankScreen() {
             </View>
           </View>
         </View>
-      </Modal>
+      </Modal >
       <TouchableOpacity style={{
         position: 'absolute',
         bottom: 30,
@@ -521,7 +557,7 @@ function BankScreen() {
           fontWeight: 'bold'
         }}>+</Text>
       </TouchableOpacity>
-    </View>
+    </View >
   );
 
 }

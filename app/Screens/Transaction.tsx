@@ -5,7 +5,7 @@ import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestor
 import { db } from '../Interfaces/Firebase';
 import { monthNames, users } from '../Interfaces/Users';
 import Dashboard from '../Components/Dashboard';
-import {  coupageGeneric } from '../Interfaces/Method';
+import { coupageGeneric } from '../Interfaces/Method';
 import * as Updates from 'expo-updates';
 import { DropDownList } from '../Components/Picker';
 import { ThemeColor } from '../Interfaces/Themed';
@@ -13,7 +13,7 @@ import { useColorScheme } from 'react-native';
 import { useUsername } from '../Components/userName';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../Interfaces/userSlice';
-import {  setDark, setFilterBy } from '../reducer/paramsSlice';
+import { setDark, setFilterBy } from '../reducer/paramsSlice';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
 const History = () => {
   // Providers declare
@@ -163,13 +163,15 @@ const History = () => {
       textDecorationLine: 'underline',
     },
     modalContainer: {
-
+      flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
+      height:200
+      //backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
     },
     modalContent: {
       backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
+      padding:10
     },
     modalTitle: {
       fontSize: 18,
@@ -292,50 +294,50 @@ const History = () => {
   return (
     <SafeAreaView style={{ paddingTop: StatusBar.currentHeight, backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background, flex: 1 }}>
       <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background} />
-      {isUpdateAvailable && (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={handleCloseModal}
-          style={{ width: "100%" }}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>New Update {Updates.runtimeVersion}</Text>
-              <Text style={styles.modalTitle}>New Update {Updates.createdAt?.toDateString()}</Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: "100%" }}>
-                <TouchableOpacity
-                  style={{ flexBasis: "45%", backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, padding: 10, borderRadius: 15 }}
-                  onPress={async () => {
-                    try {
-                      if (isUpdateAvailable) {
-                        onFetchUpdateAsync();
-                      }
-                    } catch (err) {
-                      console.error(err);
-                      // Handle errors gracefully
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isUpdateAvailable}
+        onRequestClose={handleCloseModal}
+        style={{ width: "100%" }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>New Update {Updates.runtimeVersion}</Text>
+            <Text style={styles.modalTitle}>New Update {Updates.createdAt?.toDateString()}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: "100%" }}>
+              <TouchableOpacity
+                style={{ flexBasis: "45%", backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, padding: 10, borderRadius: 15 }}
+                onPress={async () => {
+                  try {
+                    if (isUpdateAvailable) {
+                      onFetchUpdateAsync();
                     }
-                  }}>
-                  <Text
-                    style={[styles.modalTitle, { textAlign: 'center' }]}
+                  } catch (err) {
+                    console.error(err);
+                    // Handle errors gracefully
+                  }
+                }}>
+                <Text
+                  style={[styles.modalTitle, { textAlign: 'center' }]}
 
-                  >Update</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{ flexBasis: "45%", backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, padding: 10, borderRadius: 15 }}
+                >Update</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flexBasis: "45%", backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary, padding: 10, borderRadius: 15 }}
 
-                  onPress={handleCloseModal}>
-                  <Text
-                    style={[styles.modalTitle, { textAlign: 'center' }]}
+                onPress={handleCloseModal}>
+                <Text
+                  style={[styles.modalTitle, { textAlign: 'center' }]}
 
-                  >Later</Text>
-                </TouchableOpacity>
-              </View>
+                >Later</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-      )}
+        </View>
+      </Modal>
+
 
       <View style={{ flexDirection: "row", justifyContent: 'space-between' }}>
         <Text style={{ fontWeight: 'bold', padding: 10, color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }} >
@@ -364,7 +366,7 @@ const History = () => {
               <View key={item.date + "" + item.exp} style={{ flexDirection: "row", justifyContent: 'space-between', padding: 5 }}>
                 <Text style={{ fontSize: 15, fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{item.date}</Text>
 
-                <Text style={{ color: "red" }}>: -{item.exp} MAD</Text>
+                <Text style={{ color: "red" }}>: 100 - {item.exp} = {(100  - item.exp).toFixed(2)}  MAD</Text>
               </View>
             )
           })

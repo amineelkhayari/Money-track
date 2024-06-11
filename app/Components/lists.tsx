@@ -1,18 +1,19 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, useColorScheme, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { ThemeColor } from '../Interfaces/Themed';
 import { convertDate } from '../Interfaces/Method';
-import { Ionicons, Fontisto } from '@expo/vector-icons';
-import { deleteExpense } from '../Interfaces/expenseSlice';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { Ionicons, Fontisto, MaterialIcons } from '@expo/vector-icons';
+import { deleteExpense, updateExpense } from '../Interfaces/expenseSlice';
+import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
 import { useDispatch } from 'react-redux';
+import NetInfo from '@react-native-community/netinfo';
 
 type pickerProps = {
   Data: any[],
   types: string,
-  selectUser: string
+  selectUser: string,
 };
 
 const ListArray = (props: pickerProps) => {
@@ -41,9 +42,79 @@ const ListArray = (props: pickerProps) => {
   const renderItem = ({ item }: { item: GroupedData }) => (
     <View style={styles.group}>
       <TouchableOpacity onPress={() => toggleGroup(item.date)} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={[styles.date, { alignItems: 'baseline' }]}>
+        <Text style={[styles.date, { alignItems: 'center' }]}>
           {props.types != 'Expenses' ? item.date.toString() : convertDate(item.date.toString())} ({item.data.length}) : {props.types == 'Expenses' ? item?.exp?.Expense : item?.exp}
         </Text>
+        {
+          (props.types != 'Expenses') && (
+            <TouchableOpacity
+              style={{
+                            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
+               paddingLeft:10,paddingRight:10
+              }}
+
+              onPress={async () => {
+                
+                Alert.alert(
+                  "Are your sure?",
+                  "To Pay All "+props.types+" For User : "+item.date ,
+                  [
+                      // The "Yes" button
+                      {
+                          text: "Yes",
+                          onPress: async () => {
+                            const state = await NetInfo.fetch();
+                            let sync = false;
+                            item.data.forEach(async it => {
+                              let documentRef = doc(db, 'users', it.transaction);
+                              it.participants.forEach(participant => {
+                                if (participant.Value === item.date)
+                                  participant.Payed = true;
+                                else if (participant.Value === props.selectUser)
+                                  participant.Payed = true;
+                              })
+                              const mapped: Expense = {
+                                amount: it.amount,
+                                cat: it.cat,
+                                createdAt: it.createdAt,
+                                dateExp: it.dateExp,
+                                timeExp: it.timeExp,
+                                description: it.description,
+                                paidBy: it.paidBy,
+                                participants: it.participants,
+                                sync: it.sync,
+                                transaction: it.transaction
+                              }
+            
+                              if (state.isConnected && state.isInternetReachable) {
+                                sync = true;
+                                await updateDoc(documentRef, mapped)
+                              } else {
+                                updateDoc(documentRef, { ...mapped, sync });
+                              }
+            
+                              dispatch(updateExpense({ ...mapped, sync }))
+                              console.log(props.selectUser, mapped);
+                            })
+                          },
+                      },
+                      // The "No" button
+                      // Does nothing but dismiss the dialog when tapped
+                      {
+                          text: "No",
+                          onPress: () => {
+                          }
+                      },
+                  ]
+              );
+              }}>
+              <Text style={[styles.date, { alignItems: 'center' }]}>
+                Pay
+              </Text>
+            </TouchableOpacity>
+          )
+        }
+
         <Ionicons name={expandedGroups[item.date] ? 'chevron-up' : 'chevron-down'} size={24} color={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary} />
       </TouchableOpacity>
       {expandedGroups[item.date] && (
@@ -217,10 +288,11 @@ const ListArray = (props: pickerProps) => {
 
             }}
           >
-            <Ionicons name="restaurant-outline" size={22} color={'white'} />
+            <MaterialIcons name="clear" size={22} color={'white'} />
 
 
           </TouchableOpacity>
+
         </View>
       )}
     </View>
