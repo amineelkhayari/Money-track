@@ -166,12 +166,12 @@ const History = () => {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      height:200
+      height: 200
       //backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary,
     },
     modalContent: {
       backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Background,
-      padding:10
+      padding: 10
     },
     modalTitle: {
       fontSize: 18,
@@ -366,7 +366,7 @@ const History = () => {
               <View key={item.date + "" + item.exp} style={{ flexDirection: "row", justifyContent: 'space-between', padding: 5 }}>
                 <Text style={{ fontSize: 15, fontWeight: 'bold', color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{item.date}</Text>
 
-                <Text style={{ color: "red" }}>: 100 - {item.exp} = {(100  - item.exp).toFixed(2)}  MAD</Text>
+                <Text style={{ color: "red" }}>: 100 - {item.exp} = {(100 - item.exp).toFixed(2)}  MAD</Text>
               </View>
             )
           })

@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { deleteExpense, updateExpense } from '../Interfaces/expenseSlice';
 import moment from 'moment-timezone';
 import NetInfo from '@react-native-community/netinfo';
+import { ModalScreen } from './Form';
 
 
 const ExpenseDetailPage = () => {
@@ -26,6 +27,8 @@ const ExpenseDetailPage = () => {
 
 
     //State Declare
+    const [onEdit, setOnEdit] = useState<boolean>(false);
+
     const [exp, setExpenses] = useState<any>();
     const [docsID, setdocsID] = useState<string>('');
     const [participants, setParticipants] = useState<Participants[]>([]);
@@ -58,6 +61,14 @@ const ExpenseDetailPage = () => {
             ),
             headerRight: () => (
                 <View style={styless.bar}>
+
+                    <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]}
+                        onPress={() => {
+                            setOnEdit(!onEdit)
+
+                        }}>
+                        <Ionicons name={onEdit ? 'save' : 'pencil'} size={22} color={'white'} />
+                    </TouchableOpacity>
                     <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]} onPress={() => {
                         if (exp.paidBy === user)
                             Alert.alert(
@@ -93,6 +104,7 @@ const ExpenseDetailPage = () => {
                     }}>
                         <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
                     </TouchableOpacity>
+
                 </View>
             )
 
@@ -197,7 +209,6 @@ const ExpenseDetailPage = () => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 10,
         },
         header: {
             backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text,
@@ -309,34 +320,40 @@ const ExpenseDetailPage = () => {
         <View style={styles.container}>
             <StatusBar backgroundColor={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary} barStyle="light-content" />
 
-            <View style={styles.expenseCard}>
-                <Badge isSync={exp.sync} />
+            {
+                onEdit ? <>
+                    <ModalScreen expense={exp} />
+                </> : <>
+                    <View style={styles.expenseCard}>
+                        <Badge isSync={exp.sync} />
 
-                <Text style={styles.heading}>Description: {exp.description}</Text>
-                <Text style={styles.text}>Total Price: {exp.amount} MAD</Text>
-                <Text style={styles.text}>Category: {exp.cat}</Text>
+                        <Text style={styles.heading}>Description: {exp.description}</Text>
+                        <Text style={styles.text}>Total Price: {exp.amount} MAD</Text>
+                        <Text style={styles.text}>Category: {exp.cat}</Text>
 
-                <Text style={styles.text}>Date  : {exp.dateExp} At : {exp.timeExp}</Text>
-                <Text style={styles.text}>Paid By: {exp.paidBy}</Text>
-                <Text style={styles.text}>Transaction ID: {exp.transaction}</Text>
-                <Text style={styles.heading}>Participants:</Text>
-                {participants.map((participant, index) => (
-                    <View key={index} style={styles.participant}>
-                        <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{participant.Value}</Text>
-                        {participant.Payed || exp.paidBy == participant.Value
-                            ? (
-                                <Text style={styles.paidText}>Paid : {(exp.amount / exp.participants.length).toFixed(2)} MAD</Text>
-                            ) : (
-                                ((exp.paidBy == user || participant.Value == user) &&
-                                    (
-                                        <TouchableOpacity onPress={() => handlePay(index)} style={[styles.payButton, styles.payButtonright]}>
-                                            <Text style={styles.payButtonText}>Pay {(exp.amount / participants.length).toFixed(2)}</Text>
-                                        </TouchableOpacity>
-                                    ))
-                            )}
+                        <Text style={styles.text}>Date  : {exp.dateExp} At : {exp.timeExp}</Text>
+                        <Text style={styles.text}>Paid By: {exp.paidBy}</Text>
+                        <Text style={styles.text}>Transaction ID: {exp.transaction}</Text>
+                        <Text style={styles.heading}>Participants:</Text>
+                        {participants.map((participant, index) => (
+                            <View key={index} style={styles.participant}>
+                                <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>{participant.Value}</Text>
+                                {participant.Payed || exp.paidBy == participant.Value
+                                    ? (
+                                        <Text style={styles.paidText}>Paid : {(exp.amount / exp.participants.length).toFixed(2)} MAD</Text>
+                                    ) : (
+                                        ((exp.paidBy == user || participant.Value == user) &&
+                                            (
+                                                <TouchableOpacity onPress={() => handlePay(index)} style={[styles.payButton, styles.payButtonright]}>
+                                                    <Text style={styles.payButtonText}>Pay {(exp.amount / participants.length).toFixed(2)}</Text>
+                                                </TouchableOpacity>
+                                            ))
+                                    )}
+                            </View>
+                        ))}
                     </View>
-                ))}
-            </View>
+                </>
+            }
 
 
         </View>
