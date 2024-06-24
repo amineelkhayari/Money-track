@@ -11,7 +11,7 @@ import { db } from '../Interfaces/Firebase';
 import Toast from '../Components/Toast';
 import { ThemeColor } from '../Interfaces/Themed';
 import { useDispatch, useSelector } from 'react-redux';
-import { addExpense, resetExpenses } from '../Interfaces/expenseSlice';
+import { addExpense, resetExpenses, updateExpense } from '../Interfaces/expenseSlice';
 import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { Ionicons } from '@expo/vector-icons';
@@ -561,23 +561,40 @@ function BankScreen() {
   );
 
 }
+type Props = {
+  expense?: Expense
+}
+export function ModalScreen(props: Props) {
 
-function ModalScreen() {
+  //console.log("All props",props);
+  const { expense } = props
   const dispatch = useDispatch();
   const colorScheme = useColorScheme();
 
   const user = useSelector((state: any) => state.user.user);
 
-  const [Name, SetName] = useState<string>('');
-  const [PayedBy, SetPayedBy] = useState<string>('');
-  const [selectedCat, setSelectedCat] = useState<string>("");
-  const [Price, SetPrice] = useState<string>("");
+  const [Name, SetName] = useState<string>(expense?.description ?? '');
+  const [PayedBy, SetPayedBy] = useState<string>(expense?.paidBy ?? '');
+  const [selectedCat, setSelectedCat] = useState<string>(expense?.cat ?? '');
+  const [Price, SetPrice] = useState<string>(expense?.amount.toString() ?? '');
   const [done, setDone] = useState<boolean>(false); // Default to true to handle initial state
   const [items, setItems] = useState<Participants[]>(users);
-  const [exp, setExp] = useState<Expense>(initialExpense);
+  const [exp, setExp] = useState<Expense>(expense ?? initialExpense);
   const [message, setMessage] = useState<string>('');
 
+  useEffect(() => {
+    if (expense?.participants) {
+      let dt = mergeUsers(users, expense?.participants);
+      setItems(dt)
+    }
 
+  }, [])
+
+  // Function to merge and replace users
+  const mergeUsers = (initial: Participants[], selected: Participants[]): Participants[] => {
+    const selectedMap = new Map(selected.map(user => [user.ID, user]));
+    return initial.map(user => selectedMap.get(user.ID) || user);
+  };
 
   const handleCheckboxChange = useCallback((id: number) => {
     setItems(prevItems => {
@@ -600,7 +617,13 @@ function ModalScreen() {
         return;
       }
 
-      const newExpense = {
+      const newExpense = expense ? {
+        ...exp,
+        amount,
+        description: Name,
+        paidBy: PayedBy,
+        cat: selectedCat,
+      } : {
         ...exp,
         transaction: transactionId,
         amount,
@@ -608,7 +631,9 @@ function ModalScreen() {
         paidBy: PayedBy,
         cat: selectedCat,
       };
+      //console.log("old Expense ", exp);
 
+      //console.log("new Expense ", newExpense);
       const state = await NetInfo.fetch();
       if (state.isConnected && state.isInternetReachable) {
         newExpense.sync = true;
@@ -621,8 +646,10 @@ function ModalScreen() {
 
         Alert.alert('Data Added Locally', 'With Success');
       }
-
-      dispatch(addExpense(newExpense));
+      if (expense)
+        dispatch(updateExpense(newExpense));
+      else
+        dispatch(addExpense(newExpense));
 
       // Reset form
       SetName('');
