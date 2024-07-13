@@ -1,5 +1,4 @@
 // All dep Import
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { doc, setDoc } from 'firebase/firestore';
@@ -7,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { db } from './Interfaces/Firebase';
 import { useFonts } from 'expo-font';
 import NetInfo from '@react-native-community/netinfo';
-import { str } from './Interfaces/Storage';
 import { Alert, StatusBar, useColorScheme } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { ThemeColor } from './Interfaces/Themed';
@@ -16,6 +14,7 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from './Interfaces/Store';
 import { updateExpense } from './Interfaces/expenseSlice';
+import moment from 'moment';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -74,9 +73,7 @@ function Layout() {
   //State Declare
 
   // delare evet effect
-
   useEffect(() => {
-
     NetInfo.fetch().then(state => {
       if (state.isConnected && state.isInternetReachable) {
         if (expenses != null && expenses.length > 0) {
@@ -91,26 +88,30 @@ function Layout() {
           });
         }
       } else {
-        if (expenses != null && expenses.length > 0) {
+        Alert.alert("Data Being Loaded" + expenses.length);
+        if (expenses.length != 0) {
           expenses.map((exp: Expense) => {
-
             // dispatch(updateExpense(exp);
-            setDoc(doc(db, 'users', exp.transaction), { ...exp, createdAt: new Date(exp.createdAt) } as Expense);
-            dispatch(updateExpense(exp));
+            const datetimeStr = `${exp.dateExp} ${exp.timeExp}`;
 
+            // Parse the combined datetime string using moment
+            const createdAt = moment(datetimeStr, 'M/D/YYYY h:mm:ss A').toDate();
+            setDoc(doc(db, 'users', exp.transaction), { ...exp, createdAt });
+            //dispatch(updateExpense(exp));
           });
+          Alert.alert("Data Offline is Loaded");
         }
+        Alert.alert("Data is loaded");
+
       }
     }); // end nwt info
-
-  }, []);
+  }, []); // end useEffect
   //Method Declare
 
   //styles Declare
 
 
   return (
-
     <UsernameProvider>
       <Stack
         screenOptions={{
@@ -132,7 +133,5 @@ function Layout() {
         }} />
       </Stack>
     </UsernameProvider>
-
-
   );
 }
