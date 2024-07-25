@@ -18,6 +18,8 @@ const banksSlice = createSlice({
     addCashFlow: (state, action: PayloadAction<Bank>) => {
       if (!state.Bank) state.Bank = [];
       state.Bank.push(action.payload);
+
+      console.log(action.payload.motif+" is Added");
     },
     deleteRecord: (state, action: PayloadAction<string>) => {
       const index = state.Bank.findIndex(bankExp => bankExp.transaction == action.payload.trim());
