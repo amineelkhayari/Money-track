@@ -480,6 +480,7 @@ function BankScreen() {
                     newBankExp.sync = true;
                     //setMessage("New Xpenses "+exp.description+" : "+exp.amount+" Mad ");
                     await setDoc(doc(db, 'bank', newBankExp.transaction + ""), newBankExp);
+                    dispatch(addCashFlow(newBankExp))
                     Alert.alert('Data Added On Server', 'With Success');
                   } else {
                     setDoc(doc(db, 'bank', newBankExp.transaction + ""), newBankExp);

@@ -15,6 +15,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from './Interfaces/Store';
 import { updateExpense } from './Interfaces/expenseSlice';
 import moment from 'moment';
+import { updateBank } from './reducer/banksSlice';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -68,6 +69,8 @@ function Layout() {
   // Providers declare
   const colorScheme = useColorScheme();
   const expenses: Expense[] = useSelector((state: any) => state.expense.expenses);
+  const banks: Bank[] = useSelector((state: any) => state.banks.Bank);
+
   const dispatch = useDispatch();
 
   //State Declare
@@ -75,6 +78,7 @@ function Layout() {
   // delare evet effect
   useEffect(() => {
     NetInfo.fetch().then(state => {
+      console.log("bank",banks);
       if (state.isConnected && state.isInternetReachable) {
         if (expenses != null && expenses.length > 0) {
 
@@ -87,9 +91,20 @@ function Layout() {
             }
           });
         }
+        if (banks != null && banks.length > 0) {
+
+          banks.map(async (exp: Bank) => {
+            if (!exp.sync) {
+              //sconst DateConvert:Date = new Date(timestamp["seconds"] * 1000 + timestamp.nanoseconds / 1000000);
+              exp.sync = true;
+              await setDoc(doc(db,'bank', exp.transaction+""), { ...exp, createdAt: new Date(exp.createdAt)} as Bank);
+              dispatch(updateBank(exp));
+            }
+          });
+        }
       } else {
         Alert.alert("Data Being Loaded" + expenses.length);
-        if (expenses.length != 0) {
+        if (expenses.length > 0) {
           expenses.map((exp: Expense) => {
             // dispatch(updateExpense(exp);
             const datetimeStr = `${exp.dateExp} ${exp.timeExp}`;
@@ -99,9 +114,13 @@ function Layout() {
             setDoc(doc(db, 'users', exp.transaction), { ...exp, createdAt });
             //dispatch(updateExpense(exp));
           });
-          Alert.alert("Data Offline is Loaded");
+          //Alert.alert("Data Offline is Loaded");
         }
-        Alert.alert("Data is loaded");
+        if(banks.length > 0){
+          banks.forEach(async (item: Bank) => {
+            setDoc(doc(db, 'bank', item.transaction + ""), { ...item, createdAt: new Date(item.createdAt) } as Bank);
+          });
+        }
 
       }
     }); // end nwt info
