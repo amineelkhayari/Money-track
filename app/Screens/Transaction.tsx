@@ -1,7 +1,7 @@
 // All dep Import
-import { View, Text, SafeAreaView, StyleSheet, StatusBar, Button, Modal, TouchableOpacity, Alert, Switch } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, StatusBar, Modal, TouchableOpacity, Alert, Switch, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { collection, doc, Firestore, onSnapshot, orderBy, query, setDoc, Timestamp, where } from 'firebase/firestore';
 import { db } from '../Interfaces/Firebase';
 import { monthNames, users } from '../Interfaces/Users';
 import Dashboard from '../Components/Dashboard';
@@ -15,10 +15,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../Interfaces/userSlice';
 import { setDark, setFilterBy } from '../reducer/paramsSlice';
 import { Ionicons, FontAwesome6 } from '@expo/vector-icons';
+import { setExpenses } from '../Interfaces/expenseSlice';
+import NetInfo from '@react-native-community/netinfo';
+import moment from 'moment';
+
 const History = () => {
   // Providers declare
   const colorScheme = useColorScheme();
   const { setSelectedMonth, selectedMonth, startOfm, endOfm } = useUsername();
+  const expenses: Expense[] = useSelector((state: any) => state.expense.expenses);
+
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.user.user);
   const params = useSelector((state: any) => state.params);
@@ -35,6 +41,8 @@ const History = () => {
   const [expGrouped, setGrouped] = useState<GroupedData[]>([]);
   const [modalVisible, setModalVisible] = useState(true);
   const [paramsVisible, setParamsVisible] = useState(false);
+  const [dataExpense, setDataExpense] = useState<Expense[]>([]);
+
 
   const toggleModal = () => {
     setParamsVisible(!paramsVisible);
@@ -55,11 +63,11 @@ const History = () => {
         let totalDebt = 0;
         let totleExpense = 0;
         let totalCredit = 0;
-        const todos: GetExpense[] = [];
+        const todos: Expense[] = [];
         if (user == null || user == '' || user == undefined)
           return;
         const Todos = snapshot.docs.forEach((doc) => {
-          const expense = doc.data();
+          const expense = doc.data() as Expense;
           const amount = expense.amount;
           const paidBy = expense.paidBy;
 
@@ -74,10 +82,7 @@ const History = () => {
             totleExpense += amount;
             participants.forEach((participant: Participants) => {
               if (participant.Value === user)
-                todos.push({
-                  id: doc.id,
-                  ...expense
-                } as GetExpense);
+                todos.push(expense);
 
               if (participant.Value !== user && !participant.Payed) {
                 totalCredit += share;
@@ -92,10 +97,9 @@ const History = () => {
                 totalDebt += share;
               } else if (participant.Value == user && participant.Payed) {
                 totleExpense += share;
-                todos.push({
-                  id: doc.id,
-                  ...expense
-                } as GetExpense)
+                todos.push(
+                  expense
+                )
               }
 
             });
@@ -106,6 +110,7 @@ const History = () => {
           "Credit": totalCredit.toFixed(2),
           "Debts": totalDebt.toFixed(2)
         }
+        setDataExpense(todos);
         setGrouped(coupageGeneric(todos, 'cat'))
         setCalculate(res);
         setDataCount(todos.length);
@@ -432,6 +437,66 @@ const History = () => {
               value={params.dark}
             />
             <Text style={styles.modalText}>Hello, I am a bottom modal!</Text>
+            <View style={[{
+              width: '100%',
+              alignSelf: 'center',
+              justifyContent: 'center'
+
+            }]}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => {
+                  NetInfo.fetch().then(state => {
+                    if (state.isConnected && state.isInternetReachable) {
+                      dispatch(setExpenses(dataExpense));
+
+                    } else {
+                      if (expenses != null && expenses.length > 0) {
+                        expenses.map((exp: Expense) => {
+                          setDoc(doc(db, 'users', exp.transaction), { ...exp, createdAt: exp.createdAt } as Expense);
+                        });
+                        Alert.alert("Data Offline is Loaded");
+                      }
+                    }
+                  }); // end nwt info
+
+                  // console.log("to dod ",Data.length);
+                  // //dispatch(setExpenses(dataExpense));
+                  // Data.map(item =>{
+                  //   const datetimeStr = `${item.dateExp} ${item.timeExp}`;
+
+                  //   // Parse the combined datetime string using moment
+                  //   const datetime = moment(datetimeStr, 'M/D/YYYY h:mm:ss A');
+                  //   setDoc(doc(db, 'users', item.transaction), { ...item, createdAt: datetime.toDate() } as Expense);
+                  //   console.log(item.transaction);
+                  // })
+
+                }}
+              >
+                <Text style={{
+                  textAlign: 'center'
+                }}>({expenses.length}) Set Expense To Local ({dataExpense.length})</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              {
+                expenses.length != 0 && (
+                  expenses.map((item: Expense, index: number) => {
+                    
+
+                    //const t = firebase.firestore.Timestamp.fromDate(new Date());
+
+
+                    return (
+                      <Text key={index + " " + item.amount + item.description}> || {item.description} || {item.amount}</Text>
+                    )
+                  })
+                )
+
+              }
+
+
+            </ScrollView>
             <View style={[styles.buttonContainer, {
               width: '100%',
               alignSelf: 'center',
@@ -451,5 +516,5 @@ const History = () => {
     </SafeAreaView>
   )
 }
-/// eas update --branch production --message "change same config"
+/// eas update --branch production --message "set data local from online"
 export default History

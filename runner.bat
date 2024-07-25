@@ -4,6 +4,7 @@ cd C:\Users\AMINE\Desktop\Project\JsFramework\React\ttt
 
 REM Open the project in Visual Studio Code
 start code .
+start exit
 
 REM Start the React Native development server in a new Command Prompt window
 start cmd /k "npm start"

@@ -18,7 +18,6 @@ const ExpenseDetailPage = () => {
 
     // Providers declare
     const colorScheme = useColorScheme();
-    const { username } = useUsername();
     const params = useLocalSearchParams();
     const navigation = useNavigation();
     const user = useSelector((state: any) => state.user.user);
@@ -61,14 +60,16 @@ const ExpenseDetailPage = () => {
             ),
             headerRight: () => (
                 <View style={styless.bar}>
-
-                    <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]}
-                        onPress={() => {
-                            setOnEdit(!onEdit)
-
-                        }}>
-                        <Ionicons name={onEdit ? 'save' : 'pencil'} size={22} color={'white'} />
-                    </TouchableOpacity>
+                    {
+                        user === exp?.paidBy && (
+                            <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]}
+                                onPress={() => {
+                                    setOnEdit(!onEdit)
+                                }}>
+                                <Ionicons name={onEdit ? 'save' : 'pencil'} size={22} color={'white'} />
+                            </TouchableOpacity>
+                        )
+                    }
                     <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]} onPress={() => {
                         if (exp.paidBy === user)
                             Alert.alert(
@@ -104,11 +105,8 @@ const ExpenseDetailPage = () => {
                     }}>
                         <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
                     </TouchableOpacity>
-
                 </View>
             )
-
-
         });
     }, [exp])
     const combineDateTime = (date: string, time: string) => {
@@ -326,7 +324,6 @@ const ExpenseDetailPage = () => {
                 </> : <>
                     <View style={styles.expenseCard}>
                         <Badge isSync={exp.sync} />
-
                         <Text style={styles.heading}>Description: {exp.description}</Text>
                         <Text style={styles.text}>Total Price: {exp.amount} MAD</Text>
                         <Text style={styles.text}>Category: {exp.cat}</Text>
