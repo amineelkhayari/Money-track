@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, useColorScheme, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, useColorScheme, Alert, Button } from 'react-native';
 import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { ThemeColor } from '../Interfaces/Themed';
-import { convertDate } from '../Interfaces/Method';
+import { convertDate, coupageGeneric } from '../Interfaces/Method';
 import { Ionicons, Fontisto, MaterialIcons } from '@expo/vector-icons';
 import { deleteExpense, updateExpense } from '../Interfaces/expenseSlice';
 import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
@@ -21,6 +21,7 @@ const ListArray = (props: pickerProps) => {
   const [selectTransaction, setSelectTransaction] = useState<string[]>([]);
   const dispatch = useDispatch();
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
+  const [overData, setOverData] = useState<any[]>([]);
 
   const toggleGroup = (date: string) => {
     setExpandedGroups(prev => ({
@@ -117,8 +118,20 @@ const ListArray = (props: pickerProps) => {
 
         <Ionicons name={expandedGroups[item.date] ? 'chevron-up' : 'chevron-down'} size={24} color={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary} />
       </TouchableOpacity>
+      
       {expandedGroups[item.date] && (
         <View>
+          {
+        props.types != 'Expenses' && (
+          <>
+            <Button title='open' onPress={()=>{
+              setOverData(coupageGeneric(item.data, "dateExp"));
+            }} />
+            <ListArray Data={overData} selectUser={props.selectUser} types={props.types} />
+
+          </>
+        )
+      }
           <View style={{ alignItems: 'center', backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }}>
             <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>
               {props.types != 'Expenses' ? (
