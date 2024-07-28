@@ -61,7 +61,7 @@ const ExpenseDetailPage = () => {
             headerRight: () => (
                 <View style={styless.bar}>
                     {
-                        user === exp?.paidBy && (
+                        (user === exp?.paidBy || user === "Amine") && (
                             <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]}
                                 onPress={() => {
                                     setOnEdit(!onEdit)
