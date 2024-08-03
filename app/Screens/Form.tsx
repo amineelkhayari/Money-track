@@ -599,10 +599,34 @@ export function ModalScreen(props: Props) {
 
   const handleCheckboxChange = useCallback((id: number) => {
     setItems(prevItems => {
-      const updatedItems = prevItems.map(item =>
-        item.ID === id ? { ...item, checked: !item.checked } : item
-      );
+      const updatedItems = prevItems.map(item => {
+        let data:Participants = item;
+        if (item.ID === id) {
+          data.checked=!data.checked
+           if (item.Payed && !item.checked) {
+            data.Payed = false;
+            //console.log(item)
+          }
+          console.log(data)
+          return data;
+        } else {
+          return item;
+        }
+
+        //  return item.ID === id ?  : 
+
+      });
       const selectedParticipants = updatedItems.filter(item => item.checked);
+      setExp(prevExp => ({ ...prevExp, participants: selectedParticipants }));
+      return updatedItems;
+    });
+  }, []);
+  const handleCheckboxChangePayed = useCallback((id: number) => {
+    setItems(prevItems => {
+      const updatedItems = prevItems.map(item =>
+        (item.ID === id && item.checked) ? { ...item, Payed: !item.Payed } : item
+      );
+      const selectedParticipants = updatedItems.filter(item => item.Payed);
       setExp(prevExp => ({ ...prevExp, participants: selectedParticipants }));
       return updatedItems;
     });
@@ -732,11 +756,21 @@ export function ModalScreen(props: Props) {
         <FlatList
           data={items}
           renderItem={({ item }) => (
-            <Checkbox
-              label={item.Value}
-              checked={item.checked}
-              onChange={() => handleCheckboxChange(item.ID)}
-            />
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between'
+            }}>
+              <Checkbox
+                label={item.Value}
+                checked={item.checked}
+                onChange={() => handleCheckboxChange(item.ID)}
+              />
+              <Checkbox
+                label="Is Payed"
+                checked={item.Payed}
+                onChange={() => handleCheckboxChangePayed(item.ID)}
+              />
+            </View>
           )}
           keyExtractor={item => item.ID.toString()}
         />

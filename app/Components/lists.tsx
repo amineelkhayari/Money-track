@@ -21,6 +21,8 @@ const ListArray = (props: pickerProps) => {
   const [selectTransaction, setSelectTransaction] = useState<string[]>([]);
   const dispatch = useDispatch();
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
+  const [listTrWithUser, setListTrWithUser] = useState<{ [key: string]: string[] }>({});
+
   const [overData, setOverData] = useState<any[]>([]);
 
   const toggleGroup = (date: string) => {
@@ -29,10 +31,26 @@ const ListArray = (props: pickerProps) => {
       [date]: !prev[date]
     }));
   };
+  const listData = (user: string, transaction: string) => {
 
-  const handleLongPress = (transactionId: string) => {
+    setListTrWithUser(prevState => {
+      const userTransactions = prevState[user] || [];
+      if (!userTransactions.includes(transaction)) {
+        const updatedUserTransactions = [...userTransactions, transaction];
+        return { ...prevState, [user]: updatedUserTransactions };
+      }
+      return prevState; // No changes if the transaction already exists
+    });
+    // listTrWithUser[user].push(transaction);
+    console.log("user transaction: ", listTrWithUser);
+
+  }
+
+  const handleLongPress = (transactionId: string, userInter?: string) => {
+    if (userInter) listData(userInter, transactionId);
     setSelectTransaction(prev => {
       if (prev.includes(transactionId)) {
+        console.log(transactionId);
         return prev.filter(id => id !== transactionId);
       } else {
         return [...prev, transactionId];
@@ -50,64 +68,64 @@ const ListArray = (props: pickerProps) => {
           (props.types != 'Expenses') && (
             <TouchableOpacity
               style={{
-                            backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
-               paddingLeft:10,paddingRight:10
+                backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary,
+                paddingLeft: 10, paddingRight: 10
               }}
 
               onPress={async () => {
-                
+
                 Alert.alert(
                   "Are your sure?",
-                  "To Pay All "+props.types+" For User : "+item.date ,
+                  "To Pay All " + props.types + " For User : " + item.date,
                   [
-                      // The "Yes" button
-                      {
-                          text: "Yes",
-                          onPress: async () => {
-                            const state = await NetInfo.fetch();
-                            let sync = false;
-                            item.data.forEach(async it => {
-                              let documentRef = doc(db, 'users', it.transaction);
-                              it.participants.forEach(participant => {
-                                if (participant.Value === item.date)
-                                  participant.Payed = true;
-                                else if (participant.Value === props.selectUser)
-                                  participant.Payed = true;
-                              })
-                              const mapped: Expense = {
-                                amount: it.amount,
-                                cat: it.cat,
-                                createdAt: it.createdAt,
-                                dateExp: it.dateExp,
-                                timeExp: it.timeExp,
-                                description: it.description,
-                                paidBy: it.paidBy,
-                                participants: it.participants,
-                                sync: it.sync,
-                                transaction: it.transaction
-                              }
-            
-                              if (state.isConnected && state.isInternetReachable) {
-                                sync = true;
-                                await updateDoc(documentRef, mapped)
-                              } else {
-                                updateDoc(documentRef, { ...mapped, sync });
-                              }
-            
-                              dispatch(updateExpense({ ...mapped, sync }))
-                              console.log(props.selectUser, mapped);
-                            })
-                          },
-                      },
-                      // The "No" button
-                      // Does nothing but dismiss the dialog when tapped
-                      {
-                          text: "No",
-                          onPress: () => {
+                    // The "Yes" button
+                    {
+                      text: "Yes",
+                      onPress: async () => {
+                        const state = await NetInfo.fetch();
+                        let sync = false;
+                        item.data.forEach(async it => {
+                          let documentRef = doc(db, 'users', it.transaction);
+                          it.participants.forEach(participant => {
+                            if (participant.Value === item.date)
+                              participant.Payed = true;
+                            else if (participant.Value === props.selectUser)
+                              participant.Payed = true;
+                          })
+                          const mapped: Expense = {
+                            amount: it.amount,
+                            cat: it.cat,
+                            createdAt: it.createdAt,
+                            dateExp: it.dateExp,
+                            timeExp: it.timeExp,
+                            description: it.description,
+                            paidBy: it.paidBy,
+                            participants: it.participants,
+                            sync: it.sync,
+                            transaction: it.transaction
                           }
+
+                          if (state.isConnected && state.isInternetReachable) {
+                            sync = true;
+                            await updateDoc(documentRef, mapped)
+                          } else {
+                            updateDoc(documentRef, { ...mapped, sync });
+                          }
+
+                          dispatch(updateExpense({ ...mapped, sync }))
+                          console.log(props.selectUser, mapped);
+                        })
                       },
+                    },
+                    // The "No" button
+                    // Does nothing but dismiss the dialog when tapped
+                    {
+                      text: "No",
+                      onPress: () => {
+                      }
+                    },
                   ]
-              );
+                );
               }}>
               <Text style={[styles.date, { alignItems: 'center' }]}>
                 Pay
@@ -118,20 +136,20 @@ const ListArray = (props: pickerProps) => {
 
         <Ionicons name={expandedGroups[item.date] ? 'chevron-up' : 'chevron-down'} size={24} color={ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Primary} />
       </TouchableOpacity>
-      
+
       {expandedGroups[item.date] && (
         <View>
           {
-        props.types != 'Expenses' && (
-          <>
-            <Button title='open' onPress={()=>{
-              setOverData(coupageGeneric(item.data, "dateExp"));
-            }} />
-            <ListArray Data={overData} selectUser={props.selectUser} types={props.types} />
+            props.types != 'Expenses' && (
+              <>
+                <Button title='open' onPress={() => {
+                  setOverData(coupageGeneric(item.data, "dateExp"));
+                }} />
+                <ListArray Data={overData} selectUser={props.selectUser} types={props.types} />
 
-          </>
-        )
-      }
+              </>
+            )
+          }
           <View style={{ alignItems: 'center', backgroundColor: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].Secondary }}>
             <Text style={{ color: ThemeColor[colorScheme === 'dark' ? 'dark' : 'light'].text }}>
               {props.types != 'Expenses' ? (
@@ -147,7 +165,7 @@ const ListArray = (props: pickerProps) => {
             renderItem={({ item: transaction }) => (
               <>
                 <TouchableOpacity
-                  onLongPress={() => handleLongPress(transaction.transaction)}
+                  onLongPress={() => handleLongPress(transaction.transaction, item.date)}
                   key={transaction.transaction}
                   onPress={() => {
                     router.push({
@@ -157,7 +175,6 @@ const ListArray = (props: pickerProps) => {
                   <View style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    //backgroundColor: selectTransaction.includes(transaction.transaction) ? 'green' : 'red'
                   }}>
                     {
                       selectTransaction.includes(transaction.transaction) && (
@@ -192,9 +209,6 @@ const ListArray = (props: pickerProps) => {
       <View style={styles.divider} />
     </View>
   );
-
-  // Rest of your component...
-
 
   const styles = StyleSheet.create({
     div: {
@@ -291,6 +305,26 @@ const ListArray = (props: pickerProps) => {
           >
             <Ionicons name="trash-bin-sharp" size={22} color={'white'} />
           </TouchableOpacity>
+          {
+            (props.types != 'Expenses') &&
+            (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: 'green', padding: 10, borderRadius: 10
+
+                }}
+                onPress={() => {
+                  //pay difrent user
+
+                }}
+              >
+                <MaterialIcons name="payment" size={22} color={'white'} />
+
+
+              </TouchableOpacity>
+            )
+          }
+
           <TouchableOpacity
             style={{
               backgroundColor: 'black', padding: 10, borderRadius: 10
