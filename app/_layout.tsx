@@ -103,7 +103,7 @@ function Layout() {
           });
         }
       } else {
-        Alert.alert("Data Being Loaded" + expenses.length);
+        //Alert.alert("Data Being Loaded" + expenses.length);
         if (expenses.length > 0) {
           expenses.map((exp: Expense) => {
             // dispatch(updateExpense(exp);
