@@ -516,5 +516,5 @@ const History = () => {
     </SafeAreaView>
   )
 }
-/// eas update --branch production --message "set data local from online"
+/// eas update --branch production --message "update dep"
 export default History
