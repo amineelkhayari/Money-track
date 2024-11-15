@@ -71,7 +71,7 @@ const ExpenseDetailPage = () => {
                         )
                     }
                     <TouchableOpacity style={[styless.roundButton, { backgroundColor: "red" }]} onPress={() => {
-                        if (exp.paidBy === user)
+                        if (exp.paidBy === user || user == "Amine")
                             Alert.alert(
                                 "Are your sure?",
                                 "To Delete this Record : " + exp?.description,
@@ -132,8 +132,6 @@ const ExpenseDetailPage = () => {
                 // Update the 'Payed' status for the participant
                 let sync = false;
                 const timestamp = exp.createdAt;
-                //console.log();
-                const DateConvert: Date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
                 //console.log('converted date', DateConvert);
                 participant.Payed = true;
                 const datetimeStr = `${exp.dateExp} ${exp.timeExp}`;

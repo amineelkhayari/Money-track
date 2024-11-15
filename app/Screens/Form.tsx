@@ -600,15 +600,12 @@ export function ModalScreen(props: Props) {
   const handleCheckboxChange = useCallback((id: number) => {
     setItems(prevItems => {
       const updatedItems = prevItems.map(item => {
-        let data:Participants = item;
         if (item.ID === id) {
-          data.checked=!data.checked
-           if (item.Payed && !item.checked) {
-            data.Payed = false;
-            //console.log(item)
+            item = {...item,checked:!item.checked}
+          if (item.Payed && !item.checked) {
+            item = {...item, Payed:!item.Payed};
           }
-          console.log(data)
-          return data;
+          return item;
         } else {
           return item;
         }
@@ -636,6 +633,7 @@ export function ModalScreen(props: Props) {
     try {
       const transactionId = user + "" + new Date().getTime();
       const amount = Number(Number(Price).toFixed(2));
+      console.log(users[0]);
 
       if (!Name || !amount || !exp.dateExp || !PayedBy || exp.participants.length === 0 || !selectedCat) {
         Alert.alert('Error', 'All fields are required.');
@@ -683,7 +681,6 @@ export function ModalScreen(props: Props) {
       setSelectedCat('');
       setItems(users);
       setExp(initialExpense);
-      setDone(true);
     } catch (error) {
       console.error('Error adding new data:', error);
     }
